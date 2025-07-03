@@ -5,6 +5,20 @@ This is a dummy implementation for demonstration purposes.
 
 import re
 from .models import NoteSummary, OCRResult
+from llama_cpp import Llama
+from pathlib import Path
+from django.conf import settings
+
+MODEL_PATH = settings.BASE_DIR / "api" / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf"
+
+# Initialize LLaMA model (load once)
+#ADJUST THESE VALUES BASED ON YOUR SYSTEM CAPABILITIES
+llm = Llama(
+    model_path=str(MODEL_PATH),
+    n_ctx=8192,
+    n_threads=16,
+    n_gpu_layers=50
+)
 
 
 def clean_text(text):
@@ -29,74 +43,6 @@ def clean_text(text):
     return text.strip()
 
 
-def generate_summary(text, max_sentences=3):
-    """
-    Generate a simple summary from text.
-    This is a dummy implementation using basic text processing.
-    In a real application, you would use NLP libraries like transformers, spacy, etc.
-    
-    Args:
-        text (str): Text to summarize
-        max_sentences (int): Maximum number of sentences in summary
-        
-    Returns:
-        str: Generated summary
-    """
-    if not text or len(text.strip()) == 0:
-        return "No content available for summarization."
-    
-    # Clean the text
-    cleaned_text = clean_text(text)
-    
-    if len(cleaned_text) < 50:
-        return cleaned_text
-    
-    # Split into sentences
-    sentences = re.split(r'[.!?]+', cleaned_text)
-    sentences = [s.strip() for s in sentences if s.strip()]
-    
-    if not sentences:
-        return "Unable to generate summary from the provided text."
-    
-    # Simple summarization: take first few sentences and try to find key sentences
-    summary_sentences = []
-    
-    # Add the first sentence
-    if sentences:
-        summary_sentences.append(sentences[0])
-    
-    # Look for sentences with common keywords that might be important
-    keywords = ['important', 'key', 'main', 'summary', 'conclusion', 'result', 'finding']
-    
-    for sentence in sentences[1:]:
-        if len(summary_sentences) >= max_sentences:
-            break
-            
-        # Check if sentence contains important keywords
-        sentence_lower = sentence.lower()
-        if any(keyword in sentence_lower for keyword in keywords):
-            summary_sentences.append(sentence)
-        elif len(sentence) > 20 and len(summary_sentences) < max_sentences:
-            # Add longer sentences that might contain more information
-            summary_sentences.append(sentence)
-    
-    # If we still need more sentences, add from the middle/end
-    if len(summary_sentences) < max_sentences and len(sentences) > len(summary_sentences):
-        remaining_sentences = [s for s in sentences if s not in summary_sentences]
-        for sentence in remaining_sentences:
-            if len(summary_sentences) >= max_sentences:
-                break
-            if len(sentence) > 15:  # Only add meaningful sentences
-                summary_sentences.append(sentence)
-    
-    # Join sentences and ensure proper punctuation
-    summary = '. '.join(summary_sentences)
-    if not summary.endswith('.'):
-        summary += '.'
-    
-    return summary
-
-
 def generate_advanced_summary(text):
     """
     Generate a more detailed summary with key points.
@@ -107,46 +53,30 @@ def generate_advanced_summary(text):
     Returns:
         str: Detailed summary with structure
     """
-    if not text or len(text.strip()) == 0:
-        return "No content available for summarization."
-    
-    cleaned_text = clean_text(text)
-    
-    if len(cleaned_text) < 100:
-        return f"Brief note: {cleaned_text}"
-    
-    # Generate basic summary
-    basic_summary = generate_summary(text, max_sentences=2)
-    
-    # Extract potential key points
-    sentences = re.split(r'[.!?]+', cleaned_text)
-    sentences = [s.strip() for s in sentences if s.strip() and len(s) > 10]
-    
-    # Look for numbered lists or bullet points
-    key_points = []
-    for sentence in sentences:
-        # Look for patterns that might indicate important points
-        if (re.match(r'^\d+\.', sentence.strip()) or 
-            sentence.strip().startswith('-') or 
-            sentence.strip().startswith('•') or
-            any(keyword in sentence.lower() for keyword in ['important', 'note', 'remember', 'key'])):
-            key_points.append(sentence.strip())
-    
-    # Build structured summary
-    result = f"Summary: {basic_summary}"
-    
-    if key_points:
-        result += f"\n\nKey Points:\n"
-        for i, point in enumerate(key_points[:5], 1):  # Limit to 5 key points
-            result += f"{i}. {point}\n"
-    
-    # Add word count and reading time estimate
-    word_count = len(cleaned_text.split())
-    reading_time = max(1, word_count // 200)  # Assume 200 words per minute
-    
-    result += f"\nDocument Stats: {word_count} words, ~{reading_time} min read"
-    
-    return result
+    prompt = f"""
+        You are a Markdown generator.
+        Convert the following plain text to a rich Markdown document with:
+        - Proper headings
+        - Task lists
+        - Tables
+        - Links
+        - Images
+        - Quotes
+        - Footnotes
+        - Math formatting
+        - Code blocks
+        Use **bold** and *italic* where appropriate.
+
+        Input:
+        \"\"\"
+        {text.strip()}
+        \"\"\"
+
+        Markdown Output:
+    """
+
+    response = llm(prompt, max_tokens=1024, stop=["</s>"])
+    return response["choices"][0]["text"].strip()
 
 
 def process_note_summary(note):
@@ -169,6 +99,7 @@ def process_note_summary(note):
         
         # Generate summary from OCR text
         summary_text = generate_advanced_summary(ocr_result.extracted_text)
+        print(summary_text)  # Debug output
         
         # Create or update summary
         summary, created = NoteSummary.objects.get_or_create(

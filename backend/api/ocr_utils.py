@@ -3,12 +3,30 @@ OCR utility functions for processing uploaded PDF notes.
 This is a dummy implementation for demonstration purposes.
 """
 
-import pytesseract
 from PIL import Image
 import os
 import fitz  # PyMuPDF
 from pdf2image import convert_from_path
 from .models import OCRResult
+from paddleocr import PaddleOCR  
+import numpy as np
+
+# Initialize PaddleOCR
+ocr = PaddleOCR(
+    use_doc_orientation_classify=False, 
+    use_doc_unwarping=False, 
+    use_textline_orientation=False,
+)
+
+def extract_text_using_paddleocr(image):
+    result = ocr.predict(np.array(image))
+
+    final_result = ""
+    for res in result:
+        for text in res['rec_texts']:
+            final_result += f"{text} "
+
+    return final_result.strip()
 
 
 def extract_text_from_pdf(file_path):
@@ -64,13 +82,13 @@ def extract_text_from_pdf_ocr(file_path):
     """
     try:
         # Convert PDF pages to images
-        images = convert_from_path(file_path, dpi=300)  # Higher DPI for better OCR
+        images = convert_from_path(file_path, dpi=100)
         
         extracted_text = ""
         
         for i, image in enumerate(images):
             # Perform OCR on each page
-            page_text = pytesseract.image_to_string(image)
+            page_text = extract_text_using_paddleocr(image)
             if page_text.strip():
                 extracted_text += f"\n--- Page {i + 1} (OCR) ---\n"
                 extracted_text += page_text
@@ -97,7 +115,7 @@ def extract_text_from_image(file_path):
         image = Image.open(file_path)
         
         # Perform OCR using tesseract
-        extracted_text = pytesseract.image_to_string(image)
+        extracted_text = extract_text_using_paddleocr(image)
         
         return extracted_text.strip()
     
