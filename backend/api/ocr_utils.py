@@ -10,6 +10,7 @@ from pdf2image import convert_from_path
 from .models import OCRResult
 from paddleocr import PaddleOCR  
 import numpy as np
+import pdfplumber
 
 # Initialize PaddleOCR
 ocr = PaddleOCR(
@@ -41,22 +42,17 @@ def extract_text_from_pdf(file_path):
         str: Extracted text from the PDF
     """
     try:
-        # First, try to extract text directly from PDF
-        doc = fitz.open(file_path)
-        text = ""
-        
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
-            page_text = page.get_text()
-            if page_text.strip():
-                text += f"\n--- Page {page_num + 1} ---\n"
-                text += page_text
-        
-        doc.close()
+        extracted_text = ""
+        with open(file_path, "rb") as f:
+            with pdfplumber.open(f) as pdf:
+                for i, page in enumerate(pdf.pages):
+                    text = page.extract_text()
+                    if text:
+                        extracted_text += text + " \n"
         
         # If we got meaningful text, return it
-        if text.strip() and len(text.strip()) > 10:
-            return text.strip()
+        if extracted_text.strip() and len(extracted_text.strip()) > 10:
+            return extracted_text.strip()
         
         # If no text was extracted or very little text, use OCR
         return extract_text_from_pdf_ocr(file_path)
