@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+/* Force CSS custom properties to take precedence */
+:root,
+[data-theme="dark"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Custom utility classes with higher specificity */
+.theme-bg-primary {
+  background-color: var(--bg-primary) !important;
+}
+
+.theme-bg-secondary {
+  background-color: var(--bg-secondary) !important;
+}
+
+.theme-bg-tertiary {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.theme-text-primary {
+  color: var(--text-primary) !important;
+}
+
+.theme-text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.theme-text-muted {
+  color: var(--text-muted) !important;
+}
+
+.theme-border-color {
+  border-color: var(--border-color) !important;
+}
+
+.theme-accent-bg {
+  background-color: var(--accent-color) !important;
+}
+
+.theme-accent-text {
+  color: var(--accent-color) !important;
+}
+
+.theme-on-accent-text {
+  color: var(--bg-primary) !important;
+}
+
+.theme-hover-bg:hover {
+  background-color: var(--hover-bg) !important;
+}
+
+/* Ensure icons inherit correct colors */
+.theme-icon {
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+/* Custom shadow that respects theme */
+.shadow-theme {
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.shadow-theme-lg {
+  box-shadow: 0 8px 25px var(--shadow);
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 300ms;
+  transition-timing-function: ease;
+}
+
+

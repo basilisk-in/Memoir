@@ -1,0 +1,175 @@
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px; /* Account for sticky header */
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Default theme (light) - Gruvbox Light */
+:root {
+  --bg-primary: #fdf6e3;
+  --bg-secondary: #f9f5d7;
+  --bg-tertiary: #f2e5bc;
+  --text-primary: #282828;
+  --text-secondary: #3c3836;
+  --text-muted: #504945;
+  --border-color: #d5c4a1;
+  --accent-color: #b57614;
+  --hover-bg: #f2e5bc;
+  --focus-ring: #b57614;
+  --shadow: rgba(40, 40, 40, 0.12);
+}
+
+/* Dark theme - Gruvbox Dark */
+[data-theme="dark"] {
+  --bg-primary: #1d2021;
+  --bg-secondary: #282828;
+  --bg-tertiary: #3c3836;
+  --text-primary: #fbf1c7;
+  --text-secondary: #ebdbb2;
+  --text-muted: #d5c4a1;
+  --border-color: #665c54;
+  --accent-color: #fabd2f;
+  --hover-bg: #3c3836;
+  --focus-ring: #fabd2f;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+a {
+  font-weight: 500;
+  color: var(--accent-color);
+  text-decoration: inherit;
+  transition: opacity 0.3s ease;
+}
+
+a:hover {
+  opacity: 0.7;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--hover-bg);
+  border-color: var(--accent-color);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Remove the old media query since we're handling themes manually */
+
+/* View Transitions */
+@view-transition {
+  navigation: auto;
+}
+
+/* Customize the default page transition */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Fade transition for page changes */
+::view-transition-old(root) {
+  animation-name: fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: fade-in;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Smooth slide transition for certain elements */
+.page-transition-slide-out {
+  animation: slide-out 0.3s ease-in-out forwards;
+}
+
+.page-transition-slide-in {
+  animation: slide-in 0.3s ease-in-out forwards;
+}
+
+@keyframes slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
