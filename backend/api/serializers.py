@@ -43,8 +43,11 @@ class NoteCreateSerializer(serializers.ModelSerializer):
     
     def validate_files(self, files):
         """Validate that all uploaded files are PDFs."""
+        allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.gif']
+
         for file in files:
-            if not file.name.lower().endswith('.pdf'):
+            ext = file.name.lower().rsplit('.', 1)[-1]
+            if f'.{ext}' not in allowed_extensions:
                 raise serializers.ValidationError(
                     f"File '{file.name}' is not a PDF. Only PDF files are allowed."
                 )
