@@ -8,6 +8,7 @@ import {
   SparklesIcon 
 } from '@heroicons/react/24/outline'
 import apiService from '../services/api'
+import { markdownToBlocks } from '@tryfabric/martian'
 
 function Upload() {
   const [file, setFile] = useState(null)
@@ -587,42 +588,60 @@ function Upload() {
     waitForElements()
   }
 
-  const exportToNotion = () => {
-    // Enhanced export animation with morphing button
-    const button = document.querySelector('.export-btn')
-    if (!button) {
-      console.warn('Export button not found, skipping animation')
-      alert('Export to Notion functionality will be implemented with backend integration!')
+  const exportToNotion = async () => {
+    // Replace with your actual Notion token and Database ID
+    const NOTION_TOKEN = 'YOUR_NOTION_INTEGRATION_TOKEN'
+    const DATABASE_ID = 'YOUR_NOTION_DATABASE_ID'
+
+    if (!aiSummary) {
+      alert('There is no summary to export.')
+      return
+    }
+    if (NOTION_TOKEN === 'YOUR_NOTION_INTEGRATION_TOKEN' || DATABASE_ID === 'YOUR_NOTION_DATABASE_ID') {
+      alert('Please replace the placeholder Notion credentials in the code.')
       return
     }
 
-    // Use GSAP context for proper cleanup
-    const ctx = gsap.context(() => {
-      gsap.timeline()
-        .to(button, {
-          duration: 0.2,
-          scale: 0.9,
-          ease: "power2.out"
-        })
-        .to(button, {
-          duration: 0.5,
-          scale: 1.1,
-          backgroundColor: '#4CAF50',
-          borderRadius: '25px',
-          ease: "back.out(1.5)"
-        })
-                .to(button, {
-          duration: 0.3,
-          scale: 1,
-          ease: "power2.out",
-          onComplete: () => {
-            alert('Export to Notion functionality will be implemented with backend integration!')
-          }
-        })
-    })
+    const notionBlocks = markdownToBlocks(aiSummary)
+    
+    try {
+      const response = await fetch('https://api.notion.com/v1/pages', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${NOTION_TOKEN}`,
+          'Content-Type': 'application/json',
+          'Notion-Version': '2022-06-28',
+        },
+        body: JSON.stringify({
+          parent: { database_id: DATABASE_ID },
+          properties: {
+            // Assumes your database has a "title" property named "Name"
+            // Change "Name" to your actual title property name
+            'Name': {
+              title: [
+                {
+                  text: {
+                    content: fileName || 'AI Generated Summary',
+                  },
+                },
+              ],
+            },
+          },
+          children: notionBlocks,
+        }),
+      })
 
-    // Return cleanup function
-    return () => ctx.revert()
+      if (response.ok) {
+        alert('Successfully exported to Notion!')
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to export to Notion:', errorData)
+        alert(`Failed to export to Notion: ${errorData.message}`)
+      }
+    } catch (error) {
+      console.error('Error during Notion export:', error)
+      alert('An error occurred while exporting to Notion. Check the console for details.')
+    }
   }
 
   const downloadSummary = () => {
@@ -1006,27 +1025,39 @@ function Upload() {
           >
             <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-secondary)', boxShadow: '0 8px 25px var(--shadow)' }}>
               {/* Tab Bar */}
-              <div className="flex mb-4 border-b border-[color:var(--border-color)]">
+              <div className="flex justify-between items-center mb-4 border-b border-[color:var(--border-color)]">
+                <div>
+                  <button
+                    className={`px-4 py-2 font-medium focus:outline-none transition-colors duration-200 ${activeTab === 'summary' ? 'border-b-2 border-[color:var(--accent-color)] text-[color:var(--accent-color)]' : 'text-[color:var(--text-secondary)]'}`}
+                    style={{ background: 'none' }}
+                    onClick={() => setActiveTab('summary')}
+                  >
+                    Summary
+                  </button>
+                  <button
+                    className={`px-4 py-2 font-medium focus:outline-none transition-colors duration-200 ${activeTab === 'ocr' ? 'border-b-2 border-[color:var(--accent-color)] text-[color:var(--accent-color)]' : 'text-[color:var(--text-secondary)]'}`}
+                    style={{ background: 'none' }}
+                    onClick={() => setActiveTab('ocr')}
+                  >
+                    OCR
+                  </button>
+                  <button
+                    className={`px-4 py-2 font-medium focus:outline-none transition-colors duration-200 ${activeTab === 'info' ? 'border-b-2 border-[color:var(--accent-color)] text-[color:var(--accent-color)]' : 'text-[color:var(--text-secondary)]'}`}
+                    style={{ background: 'none' }}
+                    onClick={() => setActiveTab('info')}
+                  >
+                    Info
+                  </button>
+                </div>
                 <button
-                  className={`px-4 py-2 font-medium focus:outline-none transition-colors duration-200 ${activeTab === 'summary' ? 'border-b-2 border-[color:var(--accent-color)] text-[color:var(--accent-color)]' : 'text-[color:var(--text-secondary)]'}`}
-                  style={{ background: 'none' }}
-                  onClick={() => setActiveTab('summary')}
+                  onClick={exportToNotion}
+                  className="export-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md transition-all duration-200 hover:opacity-90"
+                  style={{
+                    backgroundColor: 'var(--accent-color)',
+                    color: 'var(--bg-primary)'
+                  }}
                 >
-                  Summary
-                </button>
-                <button
-                  className={`px-4 py-2 font-medium focus:outline-none transition-colors duration-200 ${activeTab === 'ocr' ? 'border-b-2 border-[color:var(--accent-color)] text-[color:var(--accent-color)]' : 'text-[color:var(--text-secondary)]'}`}
-                  style={{ background: 'none' }}
-                  onClick={() => setActiveTab('ocr')}
-                >
-                  OCR
-                </button>
-                <button
-                  className={`px-4 py-2 font-medium focus:outline-none transition-colors duration-200 ${activeTab === 'info' ? 'border-b-2 border-[color:var(--accent-color)] text-[color:var(--accent-color)]' : 'text-[color:var(--text-secondary)]'}`}
-                  style={{ background: 'none' }}
-                  onClick={() => setActiveTab('info')}
-                >
-                  Info
+                  Export to Notion
                 </button>
               </div>
               {/* Tab Content */}
