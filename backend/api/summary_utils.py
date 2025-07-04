@@ -76,7 +76,11 @@ def generate_advanced_summary(text):
     """
 
     response = llm(prompt, max_tokens=1024, stop=["</s>"])
-    return response["choices"][0]["text"].strip()
+    raw_string = response["choices"][0]["text"].strip()
+
+    lines = raw_string.split('\n')
+    cleaned_lines = [line.strip() for line in lines if line.strip()]
+    return '\n'.join(cleaned_lines)
 
 
 def process_note_summary(note):
