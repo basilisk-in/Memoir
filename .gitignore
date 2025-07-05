@@ -2,10 +2,15 @@ images/
 .ipynb_checkpoints/
 models/
 
-node_modules/
-
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+
+node_modules/
 .env
+*.log
+test-blocks.json
+test-richtext.json
+blocks.json
+richtext.json

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Markdown Publisher</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        textarea, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        
+        textarea {
+            min-height: 200px;
+            font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+            resize: vertical;
+        }
+        
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+        }
+        
+        .btn-secondary {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .success {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+        
+        .info {
+            background: #bee3f8;
+            color: #2c5282;
+            border: 1px solid #63b3ed;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .setup-help {
+            background: #fafafa;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .setup-help h3 {
+            margin-top: 0;
+            color: #2d3748;
+        }
+        
+        .setup-help ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .setup-help a {
+            color: #4299e1;
+            text-decoration: none;
+        }
+        
+        .setup-help a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Notion Markdown Publisher</h1>
+        <p class="subtitle">Convert markdown to Notion blocks and publish to your workspace</p>
+        
+        <div class="setup-help">
+            <h3>🔑 Setup Instructions:</h3>
+            <ol>
+                <li>Go to <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a></li>
+                <li>Create a new integration and copy the API token</li>
+                <li>Share your target database/page with the integration</li>
+                <li>Copy the database ID from the URL (the part after the last slash)</li>
+            </ol>
+        </div>
+        
+        <div class="info">
+            <strong>💡 Demo Mode:</strong> You can test conversion without API key - just click "Convert Only"
+        </div>
+        
+        <form id="publishForm">
+            <div class="form-group">
+                <label for="markdown">Markdown Content:</label>
+                <textarea id="markdown" placeholder="# My Document
+
+This is **bold** text with a [link](https://example.com).
+
+## Features:
+- First bullet
+- Second bullet  
+- [x] Completed task
+- [ ] Todo item
+
+> This is a quote block
+
+```javascript
+console.log('Hello, Notion!');
+```
+
+---
+
+That's all!"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="apiKey">Notion API Key (optional for conversion only):</label>
+                <input type="password" id="apiKey" placeholder="secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+            </div>
+            
+            <div class="form-group">
+                <label for="databaseId">Database ID (required for publishing):</label>
+                <input type="text" id="databaseId" placeholder="12345678-1234-1234-1234-123456789abc">
+            </div>
+            
+            <div class="form-group">
+                <label for="title">Page Title:</label>
+                <input type="text" id="title" placeholder="My New Document">
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="btn-secondary" onclick="convertOnly()">
+                    📝 Convert Only
+                </button>
+                <button type="button" class="btn-primary" onclick="convertAndSend()">
+                    🚀 Convert & Publish to Notion
+                </button>
+            </div>
+        </form>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}"><pre>${message}</pre></div>`;
+        }
+        
+        function setLoading(isLoading) {
+            const form = document.getElementById('publishForm');
+            if (isLoading) {
+                form.classList.add('loading');
+                showResult('⏳ Processing...', 'info');
+            } else {
+                form.classList.remove('loading');
+            }
+        }
+        
+        async function convertOnly() {
+            const markdown = document.getElementById('markdown').value;
+            
+            if (!markdown.trim()) {
+                showResult('❌ Please enter some markdown content', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/convert`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ markdown })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`✅ Conversion successful!
+
+📦 Generated ${data.data.blocks.length} Notion blocks
+📝 Generated ${data.data.richText.length} rich text elements
+
+🔍 Sample block structure:
+${JSON.stringify(data.data.blocks.slice(0, 2), null, 2)}
+
+💡 Use "Convert & Publish" to send these blocks to your Notion workspace.`, 'success');
+                } else {
+                    showResult(`❌ Conversion failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network error: ${error.message}`, 'error');
+            }
+            
+            setLoading(false);
+        }
+        
+        async function convertAndSend() {
+            const markdown = document.getElementById('markdown').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const databaseId = document.getElementById('databaseId').value;
+            const title = document.getElementById('title').value;
+            
+            if (!markdown.trim()) {
+                showResult('❌ Please enter some markdown content', 'error');
+                return;
+            }
+            
+            if (!apiKey.trim()) {
+                showResult('❌ Please enter your Notion API key', 'error');
+                return;
+            }
+            
+            if (!databaseId.trim()) {
+                showResult('❌ Please enter a database ID', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/convert-and-send`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        markdown,
+                        databaseId,
+                        title: title || 'Untitled Document',
+                        properties: {
+                            'Status': {
+                                select: {
+                                    name: 'Published'
+                                }
+                            },
+                            'Source': {
+                                select: {
+                                    name: 'API'
+                                }
+                            }
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`🎉 Successfully published to Notion!
+
+📄 Page ID: ${data.data.pageId}
+🔗 URL: ${data.data.url}
+📦 Blocks: ${data.data.blocks.length}
+
+✅ Your content is now live in your Notion workspace!`, 'success');
+                } else {
+                    let errorMsg = `❌ Failed to publish: ${data.error}`;
+                    if (data.help) {
+                        errorMsg += `\n\n💡 Help: ${JSON.stringify(data.help, null, 2)}`;
+                    }
+                    showResult(errorMsg, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network error: ${error.message}\n\nMake sure the server is running and your API key is correct.`, 'error');
+            }
+            
+            setLoading(false);
+        }
+        
+        // Auto-populate with demo content
+        window.addEventListener('load', () => {
+            const markdownTextarea = document.getElementById('markdown');
+            markdownTextarea.value = `# Welcome to My Document
+
+This is a **demonstration** of the Notion Markdown Publisher! 
+
+## Features Supported:
+- **Bold** and *italic* text
+- [Links to websites](https://example.com)
+- Lists and checkboxes
+- Code blocks and quotes
+- Tables and more!
+
+### Task List:
+- [x] Set up Notion integration
+- [x] Write markdown content
+- [ ] Publish to Notion
+- [ ] Share with team
+
+> 💡 **Pro tip**: This API converts any markdown to Notion blocks, making it perfect for documentation tools, content management systems, and publishing workflows.
+
+\`\`\`javascript
+// You can even include code!
+const publishToNotion = async (content) => {
+  const response = await fetch('/convert-and-send', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      markdown: content,
+      databaseId: 'your-database-id'
+    })
+  });
+  return response.json();
+};
+\`\`\`
+
+---
+
+🚀 Ready to publish? Add your API key and database ID above!`;
+        });
+    </script>
+</body>
+</html>
