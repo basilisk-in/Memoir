@@ -59,3 +59,25 @@ class NoteSummary(models.Model):
     
     def __str__(self):
         return f"Summary for {self.note.name}"
+
+
+class NotionIntegration(models.Model):
+    """Model for storing user's Notion OAuth integration."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notion_integration', null=True, blank=True)
+    access_token = models.TextField(help_text='Notion OAuth access token')
+    workspace_id = models.CharField(max_length=255, blank=True, null=True, help_text='Notion workspace ID')
+    workspace_name = models.CharField(max_length=255, blank=True, null=True, help_text='Notion workspace name')
+    bot_id = models.CharField(max_length=255, blank=True, null=True, help_text='Notion bot ID')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Notion Integration'
+        verbose_name_plural = 'Notion Integrations'
+    
+    def __str__(self):
+        return f"Notion Integration for {self.user.username if self.user else 'Temporary'}"
+    
+    def is_valid(self):
+        """Check if the integration is valid (has access token)."""
+        return bool(self.access_token)

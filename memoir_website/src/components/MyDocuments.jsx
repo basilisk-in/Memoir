@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiService } from '../services/api'
+import NotionIntegration from './NotionIntegration'
 
 export default function MyDocuments() {
   const [documents, setDocuments] = useState([])
@@ -9,10 +10,71 @@ export default function MyDocuments() {
   const [error, setError] = useState('')
   const [expandedDocs, setExpandedDocs] = useState({})
   const [searchTerm, setSearchTerm] = useState('')
+  const [notionStatus, setNotionStatus] = useState(null)
+  const [exportingToNotion, setExportingToNotion] = useState({})
+  const [exportError, setExportError] = useState('')
+  const [debugLogs, setDebugLogs] = useState([])
+
+  const addDebugLog = (message) => {
+    const timestamp = new Date().toLocaleTimeString()
+    setDebugLogs(prev => [...prev, `[${timestamp}] ${message}`])
+  }
 
   useEffect(() => {
+    addDebugLog('🔄 MyDocuments component mounted')
+    addDebugLog(`📍 Current URL: ${window.location.href}`)
+    addDebugLog(`📍 Current search params: ${window.location.search}`)
+    
     loadDocuments()
+    loadNotionStatus()
+    
+    // Handle OAuth callback messages
+    const urlParams = new URLSearchParams(window.location.search)
+    const notionConnected = urlParams.get('notion_connected')
+    const notionError = urlParams.get('notion_error')
+    
+    addDebugLog(`🔍 URL params: notionConnected=${notionConnected}, notionError=${notionError}`)
+    
+    if (notionConnected === 'true') {
+      addDebugLog('✅ Notion connected parameter detected, completing integration...')
+      // Complete the Notion integration
+      completeNotionIntegration()
+    } else if (notionError) {
+      addDebugLog(`❌ Notion error parameter detected: ${notionError}`)
+      setExportError(`Failed to connect to Notion: ${notionError}`)
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    } else {
+      addDebugLog('ℹ️ No Notion callback parameters found')
+    }
   }, [])
+
+  const completeNotionIntegration = async () => {
+    addDebugLog('🔄 Starting Notion integration completion...')
+    
+    // Check if user is authenticated
+    if (!apiService.isAuthenticated()) {
+      addDebugLog('❌ User not authenticated, cannot complete integration')
+      setExportError('Please log in to complete the Notion integration.')
+      return
+    }
+    
+    try {
+      addDebugLog('📡 Calling completeNotionIntegration API...')
+      const result = await apiService.completeNotionIntegration()
+      addDebugLog(`✅ Notion integration completed successfully: ${JSON.stringify(result)}`)
+      alert('✅ Successfully connected to Notion! You can now export your documents.')
+      // Reload Notion status
+      await loadNotionStatus()
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    } catch (error) {
+      addDebugLog(`❌ Error completing Notion integration: ${error.message}`)
+      setExportError(`Failed to complete Notion integration: ${error.message}`)
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }
 
   const loadDocuments = async () => {
     try {
@@ -25,6 +87,15 @@ export default function MyDocuments() {
       setError('Failed to load documents. Please try again.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadNotionStatus = async () => {
+    try {
+      const status = await apiService.getNotionStatus()
+      setNotionStatus(status)
+    } catch (error) {
+      console.error('❌ Error loading Notion status:', error)
     }
   }
 
@@ -58,15 +129,37 @@ export default function MyDocuments() {
       [documentId]: isExpanding
     }))
 
-    // Load summary when expanding if not already loaded
+    // Load summary if expanding and not already loaded
     if (isExpanding && !summaries[documentId]) {
       await loadSummary(documentId)
     }
   }
 
+  const handleExportToNotion = async (documentId) => {
+    if (!notionStatus?.is_connected) {
+      setExportError('Please connect your Notion account first.')
+      return
+    }
+
+    try {
+      setExportingToNotion(prev => ({ ...prev, [documentId]: true }))
+      setExportError('')
+      
+      const result = await apiService.exportToNotion(documentId)
+      
+      // Show success message
+      alert(`✅ Successfully exported "${result.note_name}" to Notion!\n\nPage URL: ${result.page_url}`)
+      
+    } catch (error) {
+      console.error('❌ Error exporting to Notion:', error)
+      setExportError(error.message || 'Failed to export to Notion')
+    } finally {
+      setExportingToNotion(prev => ({ ...prev, [documentId]: false }))
+    }
+  }
+
   const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -107,6 +200,48 @@ export default function MyDocuments() {
             View and manage your uploaded documents and their Notion-ready markdown outputs
           </p>
         </div>
+
+        {/* Notion Integration Status */}
+        <NotionIntegration />
+
+        {/* Debug: Manual integration completion test */}
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+          <p className="font-bold">Debug: Manual Integration Test</p>
+          <p className="text-sm">If OAuth worked but integration didn't complete, try this:</p>
+          <button
+            onClick={completeNotionIntegration}
+            className="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 transition-colors"
+          >
+            🔧 Manually Complete Notion Integration
+          </button>
+        </div>
+
+        {/* Debug Panel */}
+        <div className="bg-gray-100 border border-gray-400 text-gray-700 px-4 py-3 rounded mb-6">
+          <p className="font-bold">Debug Logs:</p>
+          <div className="max-h-40 overflow-y-auto text-xs font-mono bg-white p-2 rounded border">
+            {debugLogs.length === 0 ? (
+              <p className="text-gray-500">No debug logs yet...</p>
+            ) : (
+              debugLogs.map((log, index) => (
+                <div key={index} className="mb-1">{log}</div>
+              ))
+            )}
+          </div>
+          <button
+            onClick={() => setDebugLogs([])}
+            className="mt-2 text-xs text-gray-600 hover:text-gray-800"
+          >
+            Clear Logs
+          </button>
+        </div>
+
+        {/* Export Error */}
+        {exportError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            {exportError}
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="mb-8">
@@ -239,12 +374,37 @@ export default function MyDocuments() {
                         <div className="theme-text-primary whitespace-pre-line bg-white p-4 rounded-lg border">
                           {summaries[doc.id]}
                         </div>
-                        <div className="mt-3 flex justify-end">
+                        <div className="mt-3 flex justify-between items-center">
                           <button
                             onClick={() => loadSummary(doc.id)}
                             className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
                           >
                             🔄 Regenerate Markdown
+                          </button>
+                          
+                          {/* Export to Notion Button */}
+                          <button
+                            onClick={() => handleExportToNotion(doc.id)}
+                            disabled={!notionStatus?.is_connected || exportingToNotion[doc.id]}
+                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md transition-colors ${
+                              notionStatus?.is_connected 
+                                ? 'text-white bg-green-600 hover:bg-green-700' 
+                                : 'text-gray-400 bg-gray-300 cursor-not-allowed'
+                            }`}
+                          >
+                            {exportingToNotion[doc.id] ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Exporting...
+                              </>
+                            ) : (
+                              <>
+                                <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                                Export to Notion
+                              </>
+                            )}
                           </button>
                         </div>
                       </div>

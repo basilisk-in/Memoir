@@ -234,6 +234,67 @@ class ApiService {
 
     return this.handleResponse(response);
   }
+
+  // Notion Integration Methods
+  async connectNotion() {
+    console.log('🔗 Starting Notion OAuth flow...');
+    // Redirect to backend OAuth endpoint
+    window.location.href = `${this.baseURL}/api/notion/authorize/`;
+  }
+
+  async getNotionStatus() {
+    const statusUrl = `${this.baseURL}/api/notion/status/`;
+    console.log('📊 Getting Notion status from:', statusUrl);
+
+    const response = await fetch(statusUrl, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse(response);
+  }
+
+  async completeNotionIntegration() {
+    const completeUrl = `${this.baseURL}/api/notion/complete/`;
+    console.log('🔗 Completing Notion integration:', completeUrl);
+
+    const response = await fetch(completeUrl, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse(response);
+  }
+
+  async exportToNotion(noteId, parentId = null) {
+    const exportUrl = `${this.baseURL}/api/notion/export/${noteId}/`;
+    console.log('📤 Exporting to Notion:', exportUrl);
+
+    const payload = {};
+    if (parentId) {
+      payload.parent_id = parentId;
+    }
+
+    const response = await fetch(exportUrl, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    return this.handleResponse(response);
+  }
+
+  async disconnectNotion() {
+    const disconnectUrl = `${this.baseURL}/api/notion/disconnect/`;
+    console.log('🔌 Disconnecting Notion from:', disconnectUrl);
+
+    const response = await fetch(disconnectUrl, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse(response);
+  }
 }
 
 // Export singleton instance

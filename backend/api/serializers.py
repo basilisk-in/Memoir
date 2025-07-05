@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Note, OCRResult, NoteSummary
+from .models import Note, OCRResult, NoteSummary, NotionIntegration
 
 
 class NoteSerializer(serializers.ModelSerializer):
@@ -105,3 +105,17 @@ class NoteSummarySerializer(serializers.ModelSerializer):
         model = NoteSummary
         fields = ['id', 'note', 'note_name', 'summary_text', 'generated_at']
         read_only_fields = ['id', 'generated_at']
+
+
+class NotionIntegrationSerializer(serializers.ModelSerializer):
+    """Serializer for Notion integration."""
+    is_connected = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = NotionIntegration
+        fields = ['id', 'workspace_name', 'created_at', 'updated_at', 'is_connected']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_is_connected(self, obj):
+        """Check if the integration is connected."""
+        return obj.is_valid() if obj else False

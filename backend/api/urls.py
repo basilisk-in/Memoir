@@ -18,4 +18,13 @@ urlpatterns = [
     # Regeneration endpoints
     path('regenerate-ocr/<int:note_id>/', views.regenerate_ocr, name='regenerate-ocr'),
     path('regenerate-summary/<int:note_id>/', views.regenerate_summary, name='regenerate-summary'),
+    
+    # Notion integration endpoints (using regular Django views for OAuth)
+    path('notion/authorize/', views.notion_authorize, name='notion-authorize'),
+    path('notion/callback/', views.notion_callback, name='notion-callback'),
+    path('notion/test-callback/', views.test_callback, name='test-callback'),
+    path('notion/status/', views.notion_status, name='notion-status'),
+    path('notion/complete/', views.complete_notion_integration, name='complete-notion-integration'),
+    path('notion/export/<int:note_id>/', views.export_to_notion, name='export-to-notion'),
+    path('notion/disconnect/', views.disconnect_notion, name='disconnect-notion'),
 ]
