@@ -641,7 +641,7 @@ print("Summary:", response.status_code, response.json())
 ## 8. File Upload Notes
 
 ### Supported File Types:
-- Only PDF files are accepted
+- Only PDF and image files are accepted
 - File validation happens on both frontend and backend
 
 ### File Size Limits:

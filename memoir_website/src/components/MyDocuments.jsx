@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiService } from '../services/api'
 import NotionIntegration from './NotionIntegration'
+import { markdownToBlocks } from '@tryfabric/martian'
 
 export default function MyDocuments() {
   const [documents, setDocuments] = useState([])
@@ -13,18 +14,8 @@ export default function MyDocuments() {
   const [notionStatus, setNotionStatus] = useState(null)
   const [exportingToNotion, setExportingToNotion] = useState({})
   const [exportError, setExportError] = useState('')
-  const [debugLogs, setDebugLogs] = useState([])
 
-  const addDebugLog = (message) => {
-    const timestamp = new Date().toLocaleTimeString()
-    setDebugLogs(prev => [...prev, `[${timestamp}] ${message}`])
-  }
-
-  useEffect(() => {
-    addDebugLog('🔄 MyDocuments component mounted')
-    addDebugLog(`📍 Current URL: ${window.location.href}`)
-    addDebugLog(`📍 Current search params: ${window.location.search}`)
-    
+  useEffect(() => {    
     loadDocuments()
     loadNotionStatus()
     
@@ -33,43 +24,31 @@ export default function MyDocuments() {
     const notionConnected = urlParams.get('notion_connected')
     const notionError = urlParams.get('notion_error')
     
-    addDebugLog(`🔍 URL params: notionConnected=${notionConnected}, notionError=${notionError}`)
-    
     if (notionConnected === 'true') {
-      addDebugLog('✅ Notion connected parameter detected, completing integration...')
       // Complete the Notion integration
       completeNotionIntegration()
     } else if (notionError) {
-      addDebugLog(`❌ Notion error parameter detected: ${notionError}`)
       setExportError(`Failed to connect to Notion: ${notionError}`)
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname)
-    } else {
-      addDebugLog('ℹ️ No Notion callback parameters found')
     }
   }, [])
 
   const completeNotionIntegration = async () => {
-    addDebugLog('🔄 Starting Notion integration completion...')
-    
     // Check if user is authenticated
     if (!apiService.isAuthenticated()) {
-      addDebugLog('❌ User not authenticated, cannot complete integration')
       setExportError('Please log in to complete the Notion integration.')
       return
     }
     
     try {
-      addDebugLog('📡 Calling completeNotionIntegration API...')
       const result = await apiService.completeNotionIntegration()
-      addDebugLog(`✅ Notion integration completed successfully: ${JSON.stringify(result)}`)
       alert('✅ Successfully connected to Notion! You can now export your documents.')
       // Reload Notion status
       await loadNotionStatus()
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname)
     } catch (error) {
-      addDebugLog(`❌ Error completing Notion integration: ${error.message}`)
       setExportError(`Failed to complete Notion integration: ${error.message}`)
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname)
@@ -145,8 +124,28 @@ export default function MyDocuments() {
       setExportingToNotion(prev => ({ ...prev, [documentId]: true }))
       setExportError('')
       
-      const result = await apiService.exportToNotion(documentId)
+      // Get the markdown summary for this document
+      const markdown = summaries[documentId];
+      if (!markdown) {
+        setExportError('No markdown summary found for this document. Please generate it first.')
+        setExportingToNotion(prev => ({ ...prev, [documentId]: false }))
+        return;
+      }
       
+      // Convert markdown to Notion blocks in the frontend
+      let blocks;
+      try {
+        blocks = markdownToBlocks(markdown);
+        console.log('✅ Converted markdown to Notion blocks:', blocks.length, 'blocks');
+      } catch (conversionError) {
+        console.error('❌ Error converting markdown to blocks:', conversionError);
+        setExportError('Failed to convert markdown to Notion format. Please try regenerating the markdown.')
+        setExportingToNotion(prev => ({ ...prev, [documentId]: false }))
+        return;
+      }
+      
+      // Send blocks to backend
+      const result = await apiService.exportToNotionBlocks(documentId, blocks);
       // Show success message
       alert(`✅ Successfully exported "${result.note_name}" to Notion!\n\nPage URL: ${result.page_url}`)
       
@@ -203,38 +202,6 @@ export default function MyDocuments() {
 
         {/* Notion Integration Status */}
         <NotionIntegration />
-
-        {/* Debug: Manual integration completion test */}
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
-          <p className="font-bold">Debug: Manual Integration Test</p>
-          <p className="text-sm">If OAuth worked but integration didn't complete, try this:</p>
-          <button
-            onClick={completeNotionIntegration}
-            className="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 transition-colors"
-          >
-            🔧 Manually Complete Notion Integration
-          </button>
-        </div>
-
-        {/* Debug Panel */}
-        <div className="bg-gray-100 border border-gray-400 text-gray-700 px-4 py-3 rounded mb-6">
-          <p className="font-bold">Debug Logs:</p>
-          <div className="max-h-40 overflow-y-auto text-xs font-mono bg-white p-2 rounded border">
-            {debugLogs.length === 0 ? (
-              <p className="text-gray-500">No debug logs yet...</p>
-            ) : (
-              debugLogs.map((log, index) => (
-                <div key={index} className="mb-1">{log}</div>
-              ))
-            )}
-          </div>
-          <button
-            onClick={() => setDebugLogs([])}
-            className="mt-2 text-xs text-gray-600 hover:text-gray-800"
-          >
-            Clear Logs
-          </button>
-        </div>
 
         {/* Export Error */}
         {exportError && (

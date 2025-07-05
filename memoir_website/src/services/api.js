@@ -295,6 +295,25 @@ class ApiService {
 
     return this.handleResponse(response);
   }
+
+  // Export Notion blocks (new method)
+  async exportToNotionBlocks(noteId, blocks, parentId = null) {
+    const exportUrl = `${this.baseURL}/api/notion/export/${noteId}/`;
+    console.log('📤 Exporting Notion blocks to:', exportUrl);
+
+    const payload = { blocks };
+    if (parentId) {
+      payload.parent_id = parentId;
+    }
+
+    const response = await fetch(exportUrl, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    return this.handleResponse(response);
+  }
 }
 
 // Export singleton instance

@@ -334,24 +334,15 @@ def notion_callback(request):
     """
     Handle Notion OAuth callback and exchange code for access token.
     """
-    print("🔗 Notion callback received!")
-    print(f"📝 Request method: {request.method}")
-    print(f"📝 Request GET params: {request.GET}")
-    print(f"📝 User authenticated: {request.user.is_authenticated}")
-    print(f"📝 User: {request.user.username if request.user.is_authenticated else 'Anonymous'}")
     
     code = request.GET.get('code')
     state = request.GET.get('state')
     
     if not code:
-        print("❌ No authorization code received")
         return JsonResponse({'error': 'No authorization code received'}, status=400)
-    
-    print(f"📝 Authorization code: {code[:10]}...")
     
     try:
         # Exchange code for access token
-        print("🔄 Exchanging code for token...")
         token_data = exchange_code_for_token(code)
         access_token = token_data['access_token']
         
@@ -360,20 +351,13 @@ def notion_callback(request):
         workspace_name = token_data.get('workspace_name', 'Unknown')
         bot_id = token_data.get('bot_id')
         
-        print("✅ Access token obtained successfully")
-        print(f"📝 Token response: {token_data}")
-        print(f"✅ Workspace info: {workspace_name} (ID: {workspace_id})")
-        
         # Store in session
         request.session['notion_access_token'] = access_token
         request.session['notion_workspace_id'] = workspace_id
         request.session['notion_workspace_name'] = workspace_name
         request.session['notion_bot_id'] = bot_id
         
-        print("💾 Token stored in session")
-        
         # Always create a temporary integration record to avoid session issues
-        print("👤 Creating temporary integration record to avoid session issues...")
         from .models import NotionIntegration
         temp_integration = NotionIntegration.objects.create(
             user=None,  # Will be assigned when user completes integration
@@ -383,31 +367,22 @@ def notion_callback(request):
             bot_id=bot_id
         )
         request.session['temp_notion_integration_id'] = temp_integration.id
-        print(f"💾 Created temporary integration record ID: {temp_integration.id}")
-        print(f"📝 Session after storing temp ID: {dict(request.session)}")
-        print(f"📝 Session key: {request.session.session_key}")
-        print(f"🔍 DEBUG: About to save session...")
         request.session.save()
-        print(f"🔍 DEBUG: Session saved!")
         
         # Also save to current user if authenticated (as backup)
         if request.user.is_authenticated:
-            print(f"👤 Also saving to authenticated user {request.user.username} as backup...")
             integration = get_user_notion_integration(request.user)
             integration.access_token = access_token
             integration.workspace_id = workspace_id
             integration.workspace_name = workspace_name
             integration.bot_id = bot_id
             integration.save()
-            print(f"✅ Integration also saved for authenticated user")
         
         # Redirect to frontend
         redirect_url = f"{settings.FRONTEND_URL}/documents?notion_connected=true"
-        print(f"🔄 Redirecting to: {redirect_url}")
         return HttpResponseRedirect(redirect_url)
         
     except Exception as e:
-        print(f"❌ Error in callback: {str(e)}")
         error_url = f"{settings.FRONTEND_URL}/documents?notion_error={quote(str(e))}"
         return HttpResponseRedirect(error_url)
 
@@ -418,15 +393,11 @@ def notion_status(request):
     """
     Get current Notion integration status for the user.
     """
-    print(f"🔍 Status check for user: {request.user.username}")
     try:
         integration = get_user_notion_integration(request.user)
-        print(f"📝 Integration found: {integration.access_token[:10] if integration.access_token else 'No token'}...")
-        print(f"📝 Workspace: {integration.workspace_name}")
         serializer = NotionIntegrationSerializer(integration)
         return Response(serializer.data)
     except Exception as e:
-        print(f"❌ Error in status: {str(e)}")
         return Response(
             {'error': f'Failed to get Notion status: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -439,17 +410,12 @@ def complete_notion_integration(request):
     """
     Complete Notion integration by saving session data to user's integration.
     """
-    print(f"🔗 Complete integration called by user: {request.user.username}")
-    print(f"📝 Session data: {dict(request.session)}")
-    print(f"📝 Session key: {request.session.session_key}")
-    print(f"🔍 DEBUG: Session modified: {request.session.modified}")
     
     try:
         # Check if user already has an integration (from direct save during callback)
         try:
             integration = NotionIntegration.objects.get(user=request.user)
             if integration.access_token:
-                print(f"✅ User already has integration with token, returning success")
                 return Response({
                     'success': True,
                     'message': 'Notion integration already completed',
@@ -464,17 +430,13 @@ def complete_notion_integration(request):
         workspace_name = request.session.get('notion_workspace_name')
         bot_id = request.session.get('notion_bot_id')
         
-        print(f"📝 Session token: {'✅ Found' if access_token else '❌ Not found'}")
-        
         # If no session data, try to get from temporary integration record
         temp_integration_id = None
         if not access_token:
             temp_integration_id = request.session.get('temp_notion_integration_id')
-            print(f"📝 Temp integration ID from session: {temp_integration_id}")
             
             # If no session data, try to find any unassigned temporary integration
             if not temp_integration_id:
-                print(f"🔍 Looking for any unassigned temporary integration...")
                 try:
                     # Get the most recent unassigned temporary integration
                     temp_integration = NotionIntegration.objects.filter(
@@ -484,14 +446,8 @@ def complete_notion_integration(request):
                     
                     if temp_integration:
                         temp_integration_id = temp_integration.id
-                        print(f"📝 Found unassigned temporary integration: {temp_integration_id}")
-                        print(f"📝 Integration details: Token: {temp_integration.access_token[:10]}..., Workspace: {temp_integration.workspace_name}")
-                    else:
-                        print(f"❌ No unassigned temporary integrations found")
                 except Exception as e:
                     print(f"❌ Error looking for unassigned integration: {e}")
-            else:
-                print(f"📝 Using temp integration ID from session: {temp_integration_id}")
             
             if temp_integration_id:
                 try:
@@ -500,19 +456,14 @@ def complete_notion_integration(request):
                     workspace_id = temp_integration.workspace_id
                     workspace_name = temp_integration.workspace_name
                     bot_id = temp_integration.bot_id
-                    print(f"📝 Found temporary integration record: {temp_integration_id}")
                 except NotionIntegration.DoesNotExist:
-                    print(f"❌ Temporary integration {temp_integration_id} not found")
                     pass
         
         if not access_token:
-            print("❌ No access token found in session or temporary integration")
             return Response(
                 {'error': 'No Notion access token found. Please complete the OAuth flow first.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        print(f"✅ Found access token, saving to user {request.user.username}")
         
         # Save or update integration
         integration = get_user_notion_integration(request.user)
@@ -521,8 +472,6 @@ def complete_notion_integration(request):
         integration.workspace_name = workspace_name
         integration.bot_id = bot_id
         integration.save()
-        
-        print(f"✅ Integration saved successfully")
         
         # Clear session data
         request.session.pop('notion_access_token', None)
@@ -535,7 +484,6 @@ def complete_notion_integration(request):
         if temp_integration_id:
             try:
                 NotionIntegration.objects.filter(id=temp_integration_id, user=None).delete()
-                print(f"🗑️ Deleted temporary integration record: {temp_integration_id}")
             except:
                 pass
         
@@ -546,7 +494,6 @@ def complete_notion_integration(request):
         })
         
     except Exception as e:
-        print(f"❌ Error in complete_notion_integration: {str(e)}")
         return Response(
             {'error': f'Failed to complete Notion integration: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -557,7 +504,7 @@ def complete_notion_integration(request):
 @permission_classes([permissions.IsAuthenticated])
 def export_to_notion(request, note_id):
     """
-    Export a note's summary to Notion.
+    Export a note's summary to Notion, or use provided Notion blocks from frontend.
     """
     try:
         # Get the note and ensure it belongs to the user
@@ -577,11 +524,14 @@ def export_to_notion(request, note_id):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Convert markdown to Notion blocks
-        blocks = markdown_to_notion_blocks(summary.summary_text)
+        # Use blocks from frontend if provided, else convert markdown
+        blocks = request.data.get('blocks')
+        if not blocks:
+            # Convert markdown to Notion blocks (legacy fallback)
+            blocks = markdown_to_notion_blocks(summary.summary_text)
         
         # Create page title
-        page_title = f"{note.name} - Summary"
+        page_title = f"{note.name}"
         
         # Get parent_id from request if provided
         parent_id = request.data.get('parent_id')

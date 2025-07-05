@@ -179,6 +179,119 @@ def markdown_to_notion_blocks(markdown_text):
     return blocks
 
 
+def debug_blocks(blocks, prefix=""):
+    """
+    Debug function to log block structure.
+    
+    Args:
+        blocks (list): List of Notion blocks
+        prefix (str): Prefix for logging
+    """
+    for i, block in enumerate(blocks):
+        if isinstance(block, dict):
+            block_type = block.get("type", "unknown")
+            print(f"{prefix}Block {i}: {block_type}")
+            
+            if block_type == "table":
+                table = block.get("table", {})
+                width = table.get("table_width", 0)
+                children = table.get("children", [])
+                print(f"{prefix}  Table width: {width}, Children: {len(children)}")
+                
+                for j, child in enumerate(children):
+                    if child.get("type") == "table_row":
+                        cells = child.get("table_row", {}).get("cells", [])
+                        print(f"{prefix}    Row {j}: {len(cells)} cells")
+                        for k, cell in enumerate(cells):
+                            if isinstance(cell, list) and len(cell) > 0:
+                                content = cell[0].get("text", {}).get("content", "")
+                                print(f"{prefix}      Cell {k}: '{content}'")
+
+
+def validate_and_fix_notion_blocks(blocks):
+    """
+    Validate and fix Notion blocks to ensure they meet Notion's requirements.
+    Specifically handles table structure issues.
+    
+    Args:
+        blocks (list): List of Notion blocks
+        
+    Returns:
+        list: Fixed and validated blocks
+    """
+    if not blocks:
+        return blocks
+    
+    # Debug the incoming blocks
+    print("🔍 Debugging incoming blocks:")
+    debug_blocks(blocks, "  ")
+    
+    fixed_blocks = []
+    
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+            
+        # Handle table blocks specifically
+        if block.get("type") == "table":
+            table_block = block.get("table", {})
+            table_width = table_block.get("table_width", 0)
+            children = table_block.get("children", [])
+            
+            # If no table width is specified, try to infer it from the first row
+            if table_width == 0 and children:
+                first_row = children[0]
+                if first_row.get("type") == "table_row":
+                    cells = first_row.get("table_row", {}).get("cells", [])
+                    table_width = len(cells)
+                    print(f"🔧 Inferred table width: {table_width}")
+            
+            # Fix table rows to match table width
+            fixed_children = []
+            for child in children:
+                if child.get("type") == "table_row":
+                    cells = child.get("table_row", {}).get("cells", [])
+                    
+                    # Ensure we have the right number of cells
+                    while len(cells) < table_width:
+                        cells.append([{"type": "text", "text": {"content": ""}}])
+                    
+                    # Truncate if too many cells
+                    if len(cells) > table_width:
+                        cells = cells[:table_width]
+                    
+                    fixed_child = {
+                        "object": "block",
+                        "type": "table_row",
+                        "table_row": {"cells": cells}
+                    }
+                    fixed_children.append(fixed_child)
+            
+            # Create fixed table block
+            fixed_table = {
+                "object": "block",
+                "type": "table",
+                "table": {
+                    "table_width": table_width,
+                    "has_column_header": table_block.get("has_column_header", False),
+                    "has_row_header": table_block.get("has_row_header", False),
+                    "children": fixed_children
+                }
+            }
+            fixed_blocks.append(fixed_table)
+            print(f"🔧 Fixed table with width {table_width} and {len(fixed_children)} rows")
+            
+        else:
+            # For non-table blocks, just add them as-is
+            fixed_blocks.append(block)
+    
+    # Debug the fixed blocks
+    print("🔍 Debugging fixed blocks:")
+    debug_blocks(fixed_blocks, "  ")
+    
+    return fixed_blocks
+
+
 def create_notion_page(access_token, title, blocks, parent_id=None):
     """
     Create a new page in Notion.
@@ -192,6 +305,9 @@ def create_notion_page(access_token, title, blocks, parent_id=None):
     Returns:
         dict: Created page information
     """
+    # Validate and fix blocks before sending to Notion
+    fixed_blocks = validate_and_fix_notion_blocks(blocks)
+    
     headers = {
         'Authorization': f'Bearer {access_token}',
         'Notion-Version': '2022-06-28',
@@ -202,7 +318,7 @@ def create_notion_page(access_token, title, blocks, parent_id=None):
         "properties": {
             "title": [{"text": {"content": title}}]
         },
-        "children": blocks
+        "children": fixed_blocks
     }
     
     # Set parent

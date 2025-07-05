@@ -588,62 +588,6 @@ function Upload() {
     waitForElements()
   }
 
-  const exportToNotion = async () => {
-    // Replace with your actual Notion token and Database ID
-    const NOTION_TOKEN = 'YOUR_NOTION_INTEGRATION_TOKEN'
-    const DATABASE_ID = 'YOUR_NOTION_DATABASE_ID'
-
-    if (!aiSummary) {
-      alert('There is no summary to export.')
-      return
-    }
-    if (NOTION_TOKEN === 'YOUR_NOTION_INTEGRATION_TOKEN' || DATABASE_ID === 'YOUR_NOTION_DATABASE_ID') {
-      alert('Please replace the placeholder Notion credentials in the code.')
-      return
-    }
-
-    const notionBlocks = markdownToBlocks(aiSummary)
-    
-    try {
-      const response = await fetch('https://api.notion.com/v1/pages', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${NOTION_TOKEN}`,
-          'Content-Type': 'application/json',
-          'Notion-Version': '2022-06-28',
-        },
-        body: JSON.stringify({
-          parent: { database_id: DATABASE_ID },
-          properties: {
-            // Assumes your database has a "title" property named "Name"
-            // Change "Name" to your actual title property name
-            'Name': {
-              title: [
-                {
-                  text: {
-                    content: fileName || 'AI Generated Summary',
-                  },
-                },
-              ],
-            },
-          },
-          children: notionBlocks,
-        }),
-      })
-
-      if (response.ok) {
-        alert('Successfully exported to Notion!')
-      } else {
-        const errorData = await response.json()
-        console.error('Failed to export to Notion:', errorData)
-        alert(`Failed to export to Notion: ${errorData.message}`)
-      }
-    } catch (error) {
-      console.error('Error during Notion export:', error)
-      alert('An error occurred while exporting to Notion. Check the console for details.')
-    }
-  }
-
   const downloadSummary = () => {
     // Enhanced download animation
     const button = event.target.closest('button')
@@ -1049,16 +993,6 @@ function Upload() {
                     Info
                   </button>
                 </div>
-                <button
-                  onClick={exportToNotion}
-                  className="export-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md transition-all duration-200 hover:opacity-90"
-                  style={{
-                    backgroundColor: 'var(--accent-color)',
-                    color: 'var(--bg-primary)'
-                  }}
-                >
-                  Export to Notion
-                </button>
               </div>
               {/* Tab Content */}
               <div className="prose dark:prose-invert max-w-none">
