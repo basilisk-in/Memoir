@@ -55,6 +55,8 @@ def generate_advanced_summary(text):
     """
     prompt = f"""
         You are a Markdown generator.
+        Ensure that you take into account what is actually present in the input if there are no tables don't create tables forcefully etc,
+        make sure you stick to the input while converting.
         Convert the following plain text to a rich Markdown document with:
         - Proper headings
         - Task lists
