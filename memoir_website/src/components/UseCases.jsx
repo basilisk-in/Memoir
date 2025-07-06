@@ -3,6 +3,11 @@ import { HiOutlineAcademicCap, HiOutlineBriefcase, HiOutlinePaintBrush, HiOutlin
 import { useScrollAnimation, useStaggeredAnimation } from '../hooks/useScrollAnimation';
 import { gsap } from 'gsap';
 
+import studentImg from '../assets/student.png';
+import professionalImg from '../assets/professional.png';
+import creativeImg from '../assets/creative.png';
+import researchImg from '../assets/research.png';
+
 const UseCases = () => {
   const [activeTab, setActiveTab] = useState(0);
   const sectionRef = useScrollAnimation();
@@ -16,28 +21,28 @@ const UseCases = () => {
       icon: HiOutlineAcademicCap,
       title: "Transform Lecture Notes Into Study Guides",
       content: "Convert handwritten lecture notes into comprehensive study materials. Our AI identifies key concepts, creates summaries, and organizes information by topics - making exam preparation effortless.",
-      illustration: "Student studying with organized notes"
+      illustration: studentImg
     },
     {
       tab: "Professionals",
       icon: HiOutlineBriefcase,
       title: "Meeting Notes to Action Items",
       content: "Turn messy meeting notes into structured action plans. Our AI extracts key decisions, assigns tasks, and creates timelines - ensuring nothing falls through the cracks.",
-      illustration: "Professional using organized meeting notes"
+      illustration: professionalImg
     },
     {
       tab: "Creatives",
       icon: HiOutlinePaintBrush,
       title: "Organize Creative Brainstorms",
       content: "Transform scattered creative ideas into organized project plans. Our AI categorizes concepts, identifies themes, and structures your creative process for maximum productivity.",
-      illustration: "Creative professional organizing ideas"
+      illustration: creativeImg
     },
     {
       tab: "Researchers",
       icon: HiOutlineBeaker,
       title: "Research Notes to Structured Knowledge",
       content: "Transform scattered research notes and findings into structured knowledge bases. Our AI helps you organize literature reviews, experimental observations, and research insights for better analysis and publication.",
-      illustration: "Researcher organizing studies and findings"
+      illustration: researchImg
     }
   ];
 
@@ -159,10 +164,12 @@ const UseCases = () => {
 
           {/* Illustration */}
           <div ref={illustrationRef} className="flex-1 flex justify-center lg:justify-end">
-            <div className="w-80 h-80 theme-bg-tertiary rounded-lg flex items-center justify-center">
-              <p className="theme-text-muted text-center px-4">
-                {useCases[activeTab].illustration}
-              </p>
+            <div className="w-96 h-96 theme-bg-tertiary rounded-lg flex items-center justify-center overflow-hidden">
+              <img 
+                src={useCases[activeTab].illustration} 
+                alt={useCases[activeTab].tab}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>

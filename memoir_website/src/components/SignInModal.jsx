@@ -12,81 +12,85 @@ const SignInModal = ({ isOpen, onClose }) => {
   const modalRef = useRef(null);
   const contentRef = useRef(null);
 
-  useEffect(() => {
-    if (!overlayRef.current || !modalRef.current || !contentRef.current) {
-      return; // Exit early if refs are not ready
+  const handleClose = () => {
+    if (isSigningIn) return;
+    setError('');
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        onClose();
+        if (overlayRef.current) {
+          // Reset display property for next time it opens
+          gsap.set(overlayRef.current, { display: 'none' });
+        }
+      }
+    });
+
+    if (contentRef.current && contentRef.current.children.length > 0) {
+      tl.to(contentRef.current.children, {
+        opacity: 0,
+        y: -20,
+        duration: 0.2,
+        stagger: 0.05,
+        ease: "power2.in"
+      });
     }
 
-    // Use GSAP context for proper cleanup
+    if (modalRef.current) {
+      tl.to(modalRef.current, {
+        scale: 0.7,
+        opacity: 0,
+        y: 50,
+        duration: 0.3,
+        ease: "back.in(1.7)"
+      }, "-=0.1");
+    }
+
+    if (overlayRef.current) {
+      tl.to(overlayRef.current, {
+        opacity: 0,
+        duration: 0.2,
+        ease: "power2.in"
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!overlayRef.current || !modalRef.current || !contentRef.current) {
+      return; 
+    }
+
     const ctx = gsap.context(() => {
-      if (isOpen) {
-        // Show modal and animate in
         gsap.set(overlayRef.current, { display: 'flex' });
         
         const tl = gsap.timeline();
         
-        // Animate overlay fade in with backdrop blur
         tl.fromTo(overlayRef.current, 
           { opacity: 0 },
           { opacity: 1, duration: 0.3, ease: "power2.out" }
         )
-        // Animate modal scale and fade in
         .fromTo(modalRef.current,
           { scale: 0.7, opacity: 0, y: 50 },
           { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" },
           "-=0.1"
         )
-        // Animate form elements staggered
         .fromTo(contentRef.current.children,
           { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.3, stagger: 0.1, ease: "power2.out" },
           "-=0.2"
         );
-      } else if (overlayRef.current) {
-        // Animate out
-        const tl = gsap.timeline({
-          onComplete: () => {
-            if (overlayRef.current) {
-              gsap.set(overlayRef.current, { display: 'none' });
-            }
-          }
-        });
-        
-        // Only animate if elements exist
-        if (contentRef.current && contentRef.current.children.length > 0) {
-          tl.to(contentRef.current.children,
-            { opacity: 0, y: -20, duration: 0.2, stagger: 0.05, ease: "power2.in" }
-          )
-        }
-        
-        if (modalRef.current) {
-          tl.to(modalRef.current,
-            { scale: 0.7, opacity: 0, y: 50, duration: 0.3, ease: "back.in(1.7)" },
-            "-=0.1"
-          )
-        }
-        
-        if (overlayRef.current) {
-          tl.to(overlayRef.current,
-            { opacity: 0, duration: 0.2, ease: "power2.in" }
-          );
-        }
-      }
     });
 
-    // Cleanup function
     return () => ctx.revert();
   }, [isOpen]);
 
-  // Component cleanup on unmount
   useEffect(() => {
     return () => {
-      // Kill any remaining animations for this component
       const elementsToCleanup = [overlayRef.current, modalRef.current, contentRef.current].filter(Boolean);
       elementsToCleanup.forEach(element => {
         if (element) {
           gsap.killTweensOf(element);
-          // Also kill tweens on children
           const children = element.querySelectorAll('*');
           gsap.killTweensOf(Array.from(children));
         }
@@ -95,13 +99,11 @@ const SignInModal = ({ isOpen, onClose }) => {
   }, []);
 
   const handleOverlayClick = (e) => {
-    if (e.target === overlayRef.current && !isSigningIn) {
-      setError('');
-      onClose();
+    if (e.target === overlayRef.current) {
+      handleClose();
     }
   };
 
-  // Clear error when modal opens
   useEffect(() => {
     if (isOpen) {
       setError('');
@@ -154,10 +156,7 @@ const SignInModal = ({ isOpen, onClose }) => {
       >
         {/* Close button */}
         <button
-          onClick={() => {
-            setError('');
-            onClose();
-          }}
+          onClick={handleClose}
           disabled={isSigningIn}
           className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full theme-text-muted hover:theme-bg-tertiary transition-colors text-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Close modal"
