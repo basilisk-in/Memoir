@@ -22,7 +22,7 @@ const CTA = () => {
           Ready to Transform Your Notes?
         </h2>
         <p className="text-lg mb-8 max-w-2xl mx-auto leading-relaxed" style={{ color: 'var(--bg-primary)', opacity: '0.9' }}>
-          Join thousands of students and professionals who have revolutionized their note-taking workflow with NoteAI
+        Be among the first to transform your note-taking experience with Memoir — built for students and professionals rethinking how ideas are captured.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <button 
@@ -33,13 +33,13 @@ const CTA = () => {
               color: 'var(--accent-color)'
             }}
           >
-            Start Free Trial
+            Get Started
             <HiOutlineArrowRight 
               className="w-5 h-5" 
               style={{ color: 'var(--accent-color)' }}
             />
           </button>
-          <button 
+          {/* <button 
             onClick={handleViewPricing}
             className="px-8 py-3 rounded-[20px] text-lg font-bold hover:opacity-80 transition-all duration-200"
             style={{ 
@@ -51,11 +51,11 @@ const CTA = () => {
             }}
           >
             View Pricing
-          </button>
+          </button> */}
         </div>
-        <p className="text-sm mt-6" style={{ color: 'var(--bg-primary)', opacity: '0.7' }}>
+        {/* <p className="text-sm mt-6" style={{ color: 'var(--bg-primary)', opacity: '0.7' }}>
           No credit card required • 7-day free trial • Cancel anytime
-        </p>
+        </p> */}
       </div>
     </section>
   );

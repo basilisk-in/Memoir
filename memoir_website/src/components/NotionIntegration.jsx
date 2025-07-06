@@ -49,7 +49,7 @@ export default function NotionIntegration() {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+    <div className="theme-bg-secondary rounded-lg border theme-border p-4 mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
@@ -60,11 +60,11 @@ export default function NotionIntegration() {
           </div>
           
           {notionStatus?.is_connected ? (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
               Connected
             </span>
           ) : (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
               Not Connected
             </span>
           )}
@@ -78,7 +78,7 @@ export default function NotionIntegration() {
               </span>
               <button
                 onClick={handleDisconnectNotion}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md theme-text-primary theme-bg-primary hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-3 py-1.5 border theme-border text-sm font-medium rounded-md theme-text-primary theme-bg-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 Disconnect
               </button>

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { apiService } from '../services/api'
 import NotionIntegration from './NotionIntegration'
 import { markdownToBlocks } from '@tryfabric/martian'
+import { gsap } from 'gsap'
 
 export default function MyDocuments() {
   const [documents, setDocuments] = useState([])
@@ -14,6 +15,7 @@ export default function MyDocuments() {
   const [notionStatus, setNotionStatus] = useState(null)
   const [exportingToNotion, setExportingToNotion] = useState({})
   const [exportError, setExportError] = useState('')
+  const containerRefs = useRef({})
 
   useEffect(() => {    
     loadDocuments()
@@ -102,15 +104,25 @@ export default function MyDocuments() {
 
   const toggleExpand = async (documentId) => {
     const isExpanding = !expandedDocs[documentId]
-    
-    setExpandedDocs(prev => ({
-      ...prev,
-      [documentId]: isExpanding
-    }))
+    const container = containerRefs.current[documentId]
 
-    // Load summary if expanding and not already loaded
-    if (isExpanding && !summaries[documentId]) {
-      await loadSummary(documentId)
+    if (isExpanding) {
+      setExpandedDocs(prev => ({ ...prev, [documentId]: true }))
+      
+      if (!summaries[documentId]) {
+        await loadSummary(documentId)
+      }
+      
+      gsap.to(container, { height: 'auto', duration: 0.5, ease: 'power2.inOut' })
+    } else {
+      gsap.to(container, {
+        height: 0,
+        duration: 0.5,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          setExpandedDocs(prev => ({ ...prev, [documentId]: false }))
+        },
+      })
     }
   }
 
@@ -270,7 +282,7 @@ export default function MyDocuments() {
             {filteredDocuments.map((doc) => (
               <div
                 key={doc.id}
-                className="theme-bg-secondary rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                className="theme-bg-secondary rounded-lg shadow-sm border theme-border overflow-hidden"
               >
                 {/* Document Header */}
                 <div className="p-6">
@@ -290,7 +302,7 @@ export default function MyDocuments() {
                         href={doc.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md theme-text-primary theme-bg-primary hover:bg-gray-50 transition-colors"
+                        className="inline-flex items-center px-3 py-1.5 border theme-border text-sm font-medium rounded-md theme-text-primary theme-bg-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -309,7 +321,7 @@ export default function MyDocuments() {
                             <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                             </svg>
-                            Hide Summary
+                            Hide Markdown
                           </>
                         ) : (
                           <>
@@ -325,69 +337,75 @@ export default function MyDocuments() {
                 </div>
 
                 {/* Summary Section */}
-                {expandedDocs[doc.id] && (
-                  <div className="border-t border-gray-200 bg-gray-50 p-6">
-                    <h4 className="text-lg font-medium theme-text-primary mb-3">
-                      Markdown
-                    </h4>
-                    
-                    {loadingSummary[doc.id] ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                        <span className="theme-text-secondary">Generating markdown...</span>
-                      </div>
-                    ) : summaries[doc.id] ? (
-                      <div className="prose max-w-none">
-                        <div className="theme-text-primary whitespace-pre-line bg-white p-4 rounded-lg border">
-                          {summaries[doc.id]}
+                <div
+                  ref={el => (containerRefs.current[doc.id] = el)}
+                  className="overflow-hidden"
+                  style={{ height: 0 }}
+                >
+                  {expandedDocs[doc.id] && (
+                    <div className="border-t theme-border theme-bg-primary p-6">
+                      <h4 className="text-lg font-medium theme-text-primary mb-3">
+                        Markdown
+                      </h4>
+                      
+                      {loadingSummary[doc.id] ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          <span className="theme-text-secondary">Generating markdown...</span>
                         </div>
-                        <div className="mt-3 flex justify-between items-center">
+                      ) : summaries[doc.id] ? (
+                        <div className="prose max-w-none">
+                          <div className="theme-text-primary whitespace-pre-line theme-bg-secondary p-4 rounded-lg border theme-border">
+                            {summaries[doc.id]}
+                          </div>
+                          <div className="mt-3 flex justify-between items-center">
+                            <button
+                              onClick={() => loadSummary(doc.id)}
+                              className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              🔄 Regenerate Markdown
+                            </button>
+                            
+                            {/* Export to Notion Button */}
+                            <button
+                              onClick={() => handleExportToNotion(doc.id)}
+                              disabled={!notionStatus?.is_connected || exportingToNotion[doc.id]}
+                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md transition-colors ${
+                                notionStatus?.is_connected 
+                                  ? 'text-white bg-green-600 hover:bg-green-700' 
+                                  : 'text-gray-400 bg-gray-300 cursor-not-allowed'
+                              }`}
+                            >
+                              {exportingToNotion[doc.id] ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                  Exporting...
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                  </svg>
+                                  Export to Notion
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-4">
+                          <p className="theme-text-secondary mb-2">Summary not generated yet</p>
                           <button
                             onClick={() => loadSummary(doc.id)}
-                            className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
                           >
-                            🔄 Regenerate Markdown
-                          </button>
-                          
-                          {/* Export to Notion Button */}
-                          <button
-                            onClick={() => handleExportToNotion(doc.id)}
-                            disabled={!notionStatus?.is_connected || exportingToNotion[doc.id]}
-                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md transition-colors ${
-                              notionStatus?.is_connected 
-                                ? 'text-white bg-green-600 hover:bg-green-700' 
-                                : 'text-gray-400 bg-gray-300 cursor-not-allowed'
-                            }`}
-                          >
-                            {exportingToNotion[doc.id] ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                Exporting...
-                              </>
-                            ) : (
-                              <>
-                                <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                </svg>
-                                Export to Notion
-                              </>
-                            )}
+                            Generate Markdown
                           </button>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-4">
-                        <p className="theme-text-secondary mb-2">Summary not generated yet</p>
-                        <button
-                          onClick={() => loadSummary(doc.id)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
-                        >
-                          Generate Markdown
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -56,7 +56,7 @@ const Footer = () => {
               <a href="#" className="theme-text-muted hover:opacity-70 transition-colors">
                 <FaLinkedin className="w-5 h-5 theme-icon" />
               </a>
-              <a href="#" className="theme-text-muted hover:opacity-70 transition-colors">
+              <a href="https://github.com/basilisk-in" className="theme-text-muted hover:opacity-70 transition-colors">
                 <FaGithub className="w-5 h-5 theme-icon" />
               </a>
               <a href="#" className="theme-text-muted hover:opacity-70 transition-colors">
@@ -70,16 +70,16 @@ const Footer = () => {
             <h3 className="text-sm font-semibold theme-text-primary mb-4">Product</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="theme-text-muted hover:opacity-70 transition-colors text-sm">
+                <a href="#features" className="theme-text-muted hover:opacity-70 transition-colors text-sm">
                   Features
                 </a>
               </li>
               <li>
-                <a href="#" className="theme-text-muted hover:opacity-70 transition-colors text-sm">
+                <a href="#how-it-works" className="theme-text-muted hover:opacity-70 transition-colors text-sm">
                   How it Works
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a href="#" className="theme-text-muted hover:opacity-70 transition-colors text-sm">
                   Pricing
                 </a>
@@ -88,7 +88,7 @@ const Footer = () => {
                 <a href="#" className="theme-text-muted hover:opacity-70 transition-colors text-sm">
                   API
                 </a>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -150,7 +150,7 @@ const Footer = () => {
         {/* Bottom Section */}
         <div ref={bottomRef} className="mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center" style={{ borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: 'var(--border-color)' }}>
           <p className="theme-text-muted text-sm">
-            © 2024 NoteAI. All rights reserved.
+            © 2025 Memoir. All rights reserved.
           </p>
           <div className="flex items-center gap-6 mt-4 sm:mt-0">
             <a href="#" className="theme-text-muted hover:opacity-70 transition-colors text-sm">
