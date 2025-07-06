@@ -184,13 +184,13 @@ CORS_ALLOW_HEADERS = [
 # Notion OAuth2 Configuration
 NOTION_CLIENT_ID = "227d872b-594c-80fd-945d-0037680b9447"  # Replace with your actual client ID
 NOTION_CLIENT_SECRET = "secret_bngTLAlgOyIHMQyzcxT8eqo8EVLElVZjhfIZtyvGsIp"  # Replace with your actual client secret
-NOTION_REDIRECT_URI = "https://1ed2-2405-201-8003-1093-29f7-9b67-2d38-1174.ngrok-free.app/api/notion/callback/"
+NOTION_REDIRECT_URI = "https://memoir-d8ku.onrender.com/api/notion/callback/"
 NOTION_AUTHORIZATION_URL = "https://api.notion.com/v1/oauth/authorize"
 NOTION_TOKEN_URL = "https://api.notion.com/v1/oauth/token"
 NOTION_API_BASE_URL = "https://api.notion.com/v1"
 
 # Frontend URL for OAuth redirects
-FRONTEND_URL = "http://localhost:5173"
+FRONTEND_URL = "https://memoir-brown.vercel.app"
 
 # Session configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
