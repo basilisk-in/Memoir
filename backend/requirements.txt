@@ -17,6 +17,9 @@ numpy>=1.24.0
 # HTTP Requests
 requests>=2.31.0
 
+# Environment Variables
+python-dotenv>=1.0.0
+
 # File Upload and Multipart
 python-multipart>=0.0.6
 

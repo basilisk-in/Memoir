@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -182,15 +187,15 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # Notion OAuth2 Configuration
-NOTION_CLIENT_ID = "227d872b-594c-80fd-945d-0037680b9447"  # Replace with your actual client ID
-NOTION_CLIENT_SECRET = "secret_bngTLAlgOyIHMQyzcxT8eqo8EVLElVZjhfIZtyvGsIp"  # Replace with your actual client secret
-NOTION_REDIRECT_URI = "https://memoir-d8ku.onrender.com/api/notion/callback/"
+NOTION_CLIENT_ID = os.getenv("NOTION_CLIENT_ID")
+NOTION_CLIENT_SECRET = os.getenv("NOTION_CLIENT_SECRET")
+NOTION_REDIRECT_URI = "http://localhost:8000/api/notion/callback/"
 NOTION_AUTHORIZATION_URL = "https://api.notion.com/v1/oauth/authorize"
 NOTION_TOKEN_URL = "https://api.notion.com/v1/oauth/token"
 NOTION_API_BASE_URL = "https://api.notion.com/v1"
 
 # Frontend URL for OAuth redirects
-FRONTEND_URL = "https://memoir-brown.vercel.app"
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 # Session configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
