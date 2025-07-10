@@ -22,9 +22,9 @@ if not MODEL_PATH.exists():
 #ADJUST THESE VALUES BASED ON YOUR SYSTEM CAPABILITIES
 llm = Llama(
     model_path=str(MODEL_PATH),
-    n_ctx=4096,        # Can try 6144 or 8192 if memory allows
-    n_threads=8,       # Matches your physical core count
-    n_gpu_layers=35    # Good balance for 12GB VRAM with Q4_K_M GGUF model
+    n_ctx=3072,        # Lowered to reduce memory footprint
+    n_threads=8,       # Matches your 8 physical CPU cores
+    n_gpu_layers=30    # Fits comfortably within 10–10.5 GB VRAM
 )
 
 def clean_text(text):
