@@ -15,6 +15,9 @@ from .download_model import download_model
 
 MODEL_PATH = Path(__file__).resolve().parent / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf"
 
+if not MODEL_PATH.exists():
+    raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
+
 # Initialize LLaMA model (load once)
 #ADJUST THESE VALUES BASED ON YOUR SYSTEM CAPABILITIES
 llm = Llama(
