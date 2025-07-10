@@ -10,9 +10,9 @@ from pathlib import Path
 from django.conf import settings
 from .download_model import download_model
 
-MODEL_PATH = download_model()
-# MODEL_PATH = settings.BASE_DIR / "api" / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf"
-
+# MODEL_PATH = download_model()
+# MODEL_PATH = Path(settings.BASE_DIR / "api" / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf")
+MODEL_PATH = Path("models/mistral-7b-instruct-v0.1.Q4_K_M.gguf")
 # Initialize LLaMA model (load once)
 #ADJUST THESE VALUES BASED ON YOUR SYSTEM CAPABILITIES
 llm = Llama(
