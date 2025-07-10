@@ -659,3 +659,20 @@ print("Summary:", response.status_code, response.json())
 - Supports multi-page PDFs
 
 This comprehensive guide covers all the API endpoints and provides examples for testing each functionality. Make sure to start the Django development server (`python manage.py runserver`) before testing these endpoints.
+
+---
+
+## Deployment Notes for Linux/Docker
+
+- Ensure the following environment variables are set (via .env or Docker environment):
+    - NOTION_CLIENT_ID
+    - NOTION_CLIENT_SECRET
+    - FRONTEND_URL
+    - (any other secrets your app uses)
+- Required system packages (install in Dockerfile or host):
+    - poppler-utils (for pdf2image)
+    - build-essential, libopenblas-dev, liblapack-dev (for llama-cpp-python)
+    - libjpeg, zlib (for PyMuPDF, Pillow)
+- If using GPU, install paddlepaddle-gpu instead of paddlepaddle.
+- Ensure /models and /media directories exist and are writable by the app user.
+- For production, consider using PostgreSQL or MySQL instead of SQLite for the database.

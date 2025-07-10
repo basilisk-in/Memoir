@@ -6,6 +6,7 @@ MODEL_URL = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resol
 MODEL_PATH = "/models/mistral-7b-instruct-v0.1.Q4_K_M.gguf"
 
 def download_model():
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     if os.path.exists(MODEL_PATH):
         print("✅ GGUF model already exists at:", MODEL_PATH)
         return MODEL_PATH
