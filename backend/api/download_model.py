@@ -1,9 +1,10 @@
 import os
+from pathlib import Path
 import requests
 from tqdm import tqdm
 
 MODEL_URL = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf"
-MODEL_PATH = "./api/models/mistral-7b-instruct-v0.1.Q4_K_M.gguf"
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf"
 
 def download_model():
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
