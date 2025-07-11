@@ -447,7 +447,7 @@ function Upload() {
                       duration: 3.5,
                       ease: "power2.inOut",
                       onUpdate: function() {
-                        const progress = Math.round(this.progress() * 100)
+                        const progress = Math.round(this.progress() * 99)
                         setProcessingProgress(progress)
                       }
                     }

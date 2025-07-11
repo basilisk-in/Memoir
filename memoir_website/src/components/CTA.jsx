@@ -1,13 +1,22 @@
 import { HiOutlineArrowRight } from 'react-icons/hi2';
 import { useNavigate } from 'react-router-dom';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { useState } from 'react';
+import SignInModal from './SignInModal';
+import { useAuth } from '../hooks/useAuth.jsx';
 
 const CTA = () => {
   const ctaRef = useScrollAnimation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
 
   const handleStartFreeTrial = () => {
-    navigate('/upload', { viewTransition: true });
+    if (isAuthenticated) {
+      navigate('/upload', { viewTransition: true });
+    } else {
+      setIsSignInModalOpen(true);
+    }
   };
 
   const handleViewPricing = () => {
@@ -57,6 +66,10 @@ const CTA = () => {
           No credit card required • 7-day free trial • Cancel anytime
         </p> */}
       </div>
+      <SignInModal 
+        isOpen={isSignInModalOpen} 
+        onClose={() => setIsSignInModalOpen(false)} 
+      />
     </section>
   );
 };

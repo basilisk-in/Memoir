@@ -3,11 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme.jsx';
 import memoirLogo from '../assets/memoirlogo.svg';
 import memoirLogoLight from '../assets/memoirlight.svg';
+import { useState } from 'react';
+import SignInModal from './SignInModal';
+import { useAuth } from '../hooks/useAuth.jsx';
 
 const Hero = () => {
   const heroRef = useScrollAnimation("bottom 90%", "top 90%");
   const navigate = useNavigate();
   const { isDark, theme } = useTheme();
+  const { isAuthenticated } = useAuth();
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
 
   console.log('Hero: Rendering with theme:', theme, 'isDark:', isDark);
 
@@ -15,12 +20,15 @@ const Hero = () => {
   console.log('Hero: Using logo:', logoSrc.includes('light') ? 'LIGHT' : 'DARK');
 
   const handleTryForFree = () => {
-    navigate('/upload', { viewTransition: true });
+    if (isAuthenticated) {
+      navigate('/upload', { viewTransition: true });
+    } else {
+      setIsSignInModalOpen(true);
+    }
   };
 
   const handleWatchDemo = () => {
-    // Placeholder for demo functionality
-    console.log('Demo clicked - smooth scroll or modal can be added here');
+    window.open('https://www.youtube.com/watch?v=4RRsZiytH-s', '_blank');
   };
 
   return (
@@ -65,6 +73,10 @@ const Hero = () => {
           </div>
         </div>
       </div>
+      <SignInModal 
+        isOpen={isSignInModalOpen} 
+        onClose={() => setIsSignInModalOpen(false)} 
+      />
     </section>
   );
 };
