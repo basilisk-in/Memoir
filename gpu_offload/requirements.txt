@@ -1,0 +1,45 @@
+# Django and REST Framework
+Django>=5.0
+djangorestframework>=3.14.0
+djoser>=2.2.0
+
+# Image and PDF Processing
+Pillow>=10.0.0
+PyMuPDF>=1.23.0
+pdf2image>=1.16.0
+pdfplumber>=0.10.0
+
+# OCR and Text Processing
+pytesseract>=0.3.10
+paddleocr>=2.7.0
+numpy>=1.24.0
+
+# HTTP Requests
+requests>=2.31.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# File Upload and Multipart
+python-multipart>=0.0.6
+
+# AI/ML for Summarization
+llama-cpp-python>=0.2.0
+
+# Development and Testing (optional)
+# pytest>=7.4.0
+# pytest-django>=4.5.0
+# coverage>=7.2.0
+
+django-cors-headers
+
+# OCR dependencies
+paddlepaddle==2.5.0  # Use paddlepaddle-gpu==2.5.0 if running with GPU
+
+# System dependencies required for some packages:
+# - pdf2image: poppler-utils
+# - llama-cpp-python: build-essential, libopenblas-dev, liblapack-dev
+# - PyMuPDF, Pillow: libjpeg, zlib
+
+
+flask
