@@ -189,7 +189,7 @@ CORS_ALLOW_HEADERS = [
 # Notion OAuth2 Configuration
 NOTION_CLIENT_ID = os.getenv("NOTION_CLIENT_ID")
 NOTION_CLIENT_SECRET = os.getenv("NOTION_CLIENT_SECRET")
-NOTION_REDIRECT_URI = "http://localhost:8000/api/notion/callback/"
+NOTION_REDIRECT_URI = "https://memoir-1xih.onrender.com/api/notion/callback/"
 NOTION_AUTHORIZATION_URL = "https://api.notion.com/v1/oauth/authorize"
 NOTION_TOKEN_URL = "https://api.notion.com/v1/oauth/token"
 NOTION_API_BASE_URL = "https://api.notion.com/v1"
