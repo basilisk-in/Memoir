@@ -21,37 +21,37 @@ Team Members:
 
 
 ### 🛠️ Tech Stack
-*Frontend*: React (Vite, TailwindCSS, React Router)
+**Frontend**: React (Vite, TailwindCSS, React Router)
 
-*Backend*: Django, Django REST Framework, Djoser, SQLite, PaddleOCR, PyMuPDF, pdfplumber, LLM (remote Markdown server)
+**Backend**: Django, Django REST Framework, Djoser, SQLite, PaddleOCR, PyMuPDF, pdfplumber, LLM (remote Markdown server)
 
-*AI/ML*: PaddleOCR for text extraction, LLM (Mistral-7B) for Markdown summarization (served remotely)
+**AI/ML**: PaddleOCR for text extraction, LLM (Mistral-7B) for Markdown summarization (served remotely)
 
-*Integrations*: Notion API
+**Integrations**: Notion API
 
 
 ### Key Features
-- 📄 *Multi-file Upload*: Upload multiple PDF/image notes at once with custom names.
-- 🔍 *OCR Extraction*: Automatic text extraction from PDFs and images using PaddleOCR and PyMuPDF.
-- 🧠 *AI Summarization*: Generate rich Markdown summaries using a remote LLM server.
-- 🗂️ *Note Management*: Search, filter, and organize notes by name or date.
-- 🔗 *Notion Export*: Export AI-generated summaries directly to your Notion workspace.
-- 👤 *User Authentication*: Secure registration, login, and token-based auth (Djoser).
-- 🖼️ *File Previews*: View uploaded notes and summaries in the web UI.
-- 🌗 *Dark/Light Mode*: Toggle between light and dark themes.
+- 📄 **Multi-file Upload**: Upload multiple PDF/image notes at once with custom names.
+- 🔍 **OCR Extraction**: Automatic text extraction from PDFs and images using PaddleOCR and PyMuPDF.
+- 🧠 **AI Summarization**: Generate rich Markdown summaries using a remote LLM server.
+- 🗂️ **Note Management**: Search, filter, and organize notes by name or date.
+- 🔗 **Notion Export**: Export AI-generated summaries directly to your Notion workspace.
+- 👤 **User Authentication**: Secure registration, login, and token-based auth (Djoser).
+- 🖼️ **File Previews**: View uploaded notes and summaries in the web UI.
+- 🌗 **Dark/Light Mode**: Toggle between light and dark themes.
 
 ### 🏗️ Architecture
-1. *Django REST API Server*
+1. **Django REST API Server**
    - Handles user authentication, note uploads, OCR, and summary generation
    - Exposes REST endpoints for all note and user operations
    - Integrates with a remote LLM server for Markdown summary generation
    - Stores files in /media/notes/{user_id}/
-2. *React Frontend (Vite)*
+2. **React Frontend (Vite)**
    - Modern SPA for uploading, viewing, and managing notes
    - Authenticates via token-based API
    - Provides UI for Notion integration and document export
    - Responsive, accessible, and themeable
-3. *Remote LLM Server (not included here)*
+3. **Remote LLM Server (not included here)**
    - Receives text and returns Markdown summaries via HTTP
    - Powered by Mistral-7B or similar model
 
