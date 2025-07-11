@@ -11,9 +11,9 @@ assert Path(MODEL_PATH).exists(), "Model file not found!"
 
 llm = Llama(
     model_path=MODEL_PATH,
-    n_ctx=512,
-    n_threads=4,
-    n_gpu_layers=0  # Adjust for your 3060 (~6-8 GB VRAM)
+    n_ctx=4096,      # Increased context size for more VRAM
+    n_threads=os.cpu_count(),     # Adjust based on your CPU
+    n_gpu_layers=-1  # Offload all layers to the GPU (for 16GB VRAM)
 )
 
 def text_to_markdown(text: str) -> str:
@@ -37,7 +37,7 @@ Input:
 
 Markdown Output:
 """
-    response = llm(prompt, max_tokens=128, stop=["</s>"])
+    response = llm(prompt, max_tokens=1024, stop=["</s>"])
     return response["choices"][0]["text"].strip()
 
 @app.route("/generate-markdown", methods=["POST"])
