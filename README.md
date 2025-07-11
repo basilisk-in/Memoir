@@ -2,7 +2,7 @@
 Your Notes, Smarter.
 
 ## Project Idea
-Memoir is an AI-powered note management platform that lets users upload, organize, and summarize their PDF and image notes. Leveraging advanced OCR and LLM-based Markdown generation, Memoir automatically extracts text from documents and produces rich, structured summaries. Users can search, filter, and manage their notes, and even export summaries to Notion for seamless knowledge management.
+Memoir is an AI-powered note management platform that lets users upload, organize, and summarize their PDF and image notes. Leveraging advanced OCR and LLM-based Markdown generation, Memoir automatically extracts text from documents and produces rich, structured markdowns. Users can search, filter, and manage their notes, and even export markdowns to Notion for seamless knowledge management.
 
 Team Name:
 
@@ -19,6 +19,10 @@ Team Members:
 - [@kantandesu](https://github.com/kantandesu)
 - [@sagnik-tech56](https://github.com/sagnik-tech56)
 
+### Deployment
+This project is hosted at [memoir-brown.vercel.app](https://memoir-brown.vercel.app) and the backend is hosted at [memoir-7665.onrender.com](https://memoir-7665.onrender.com/).
+
+Our GPU connected backend is currently offline. We have previously deployed the service on Vast.ai, but the container is currently inactive since we wish to use the credits wisely. Although we have credits available, we will activate the GPU hosting on Vast.ai when necessary. For testing access or further information, feel free to contact us at dev.basilisk@gmail.com.
 
 ### 🛠️ Tech Stack
  - **Frontend**: React (Vite, TailwindCSS, React Router)
