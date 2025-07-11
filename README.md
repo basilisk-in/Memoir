@@ -40,7 +40,7 @@ Our GPU connected backend is currently offline. We have previously deployed the 
 
 ### 🏗️ Architecture
 1. **Backend (Django REST API Server)**
-   - Handles user authentication, note uploads, OCR, and summary generation AAAAAAAAAAAAAAAAAA
+   - Handles user authentication, note uploads, OCR, and summary generation
    - Exposes REST endpoints for all note and user operations
    - Integrates with a remote LLM server for Markdown summary generation
    - Stores files in /media/notes/{user_id}/
@@ -76,7 +76,7 @@ npm run dev  # Runs on http://localhost:5173
 ### Environment Variables
 Create a `.env` file in `backend/` with:
 ```
-REMOTE_MARKDOWN_SERVER_URL=https://your-llm-server-url AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+REMOTE_MARKDOWN_SERVER_URL=https://your-llm-server-url  # Include this only when you are running from deployment branch
 NOTION_CLIENT_ID=your_notion_client_id
 NOTION_CLIENT_SECRET=your_notion_secret
 FRONTEND_URL=http://localhost:5173
