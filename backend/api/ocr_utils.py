@@ -8,26 +8,25 @@ import os
 import fitz  # PyMuPDF
 from pdf2image import convert_from_path
 from .models import OCRResult
-from paddleocr import PaddleOCR  
-import numpy as np
+import requests
 import pdfplumber
 
-# Initialize PaddleOCR
-ocr = PaddleOCR(
-    use_doc_orientation_classify=False, 
-    use_doc_unwarping=False, 
-    use_textline_orientation=False,
-)
+REMOTE_OCR_SERVER_URL = os.getenv("REMOTE_SERVER_URL")
 
-def extract_text_using_paddleocr(image):
-    result = ocr.predict(np.array(image))
-
-    final_result = ""
-    for res in result:
-        for text in res['rec_texts']:
-            final_result += f"{text} "
-
-    return final_result.strip()
+def request_ocr(server_url: str, file_path: str):
+    url = f"{server_url}/generate-ocr"
+    with open(file_path, "rb") as f:
+        files = {"file": (os.path.basename(file_path), f)}
+        try:
+            response = requests.post(url, files=files, timeout=1800)
+            response.raise_for_status()
+            data = response.json()
+            if "extracted_text" in data:
+                return data["extracted_text"]
+            else:
+                return f"Error from server: {data.get('error', 'Unknown error')}"
+        except requests.RequestException as e:
+            return f"Request failed: {e}"
 
 
 def extract_text_from_pdf(file_path):
@@ -54,45 +53,16 @@ def extract_text_from_pdf(file_path):
         if extracted_text.strip() and len(extracted_text.strip()) > 10:
             return extracted_text.strip()
         
-        # If no text was extracted or very little text, use OCR
-        return extract_text_from_pdf_ocr(file_path)
+        # If no text was extracted or very little text, use remote OCR
+        return request_ocr(REMOTE_OCR_SERVER_URL, file_path)
     
     except Exception as e:
         print(f"Error extracting text from PDF {file_path}: {str(e)}")
         # Fallback to OCR if direct extraction fails
         try:
-            return extract_text_from_pdf_ocr(file_path)
+            return request_ocr(REMOTE_OCR_SERVER_URL, file_path)
         except Exception as ocr_error:
             return f"Error processing PDF: {str(e)} | OCR Error: {str(ocr_error)}"
-
-
-def extract_text_from_pdf_ocr(file_path):
-    """
-    Extract text from PDF using OCR by converting pages to images.
-    
-    Args:
-        file_path (str): Path to the PDF file
-        
-    Returns:
-        str: OCR extracted text from the PDF
-    """
-    try:
-        # Convert PDF pages to images
-        images = convert_from_path(file_path, dpi=100)
-        
-        extracted_text = ""
-        
-        for i, image in enumerate(images):
-            # Perform OCR on each page
-            page_text = extract_text_using_paddleocr(image)
-            if page_text.strip():
-                extracted_text += f"\n--- Page {i + 1} (OCR) ---\n"
-                extracted_text += page_text
-        
-        return extracted_text.strip()
-    
-    except Exception as e:
-        raise Exception(f"OCR processing failed: {str(e)}")
 
 
 def extract_text_from_image(file_path):
@@ -111,7 +81,7 @@ def extract_text_from_image(file_path):
         image = Image.open(file_path)
         
         # Perform OCR using tesseract
-        extracted_text = extract_text_using_paddleocr(image)
+        extracted_text = request_ocr(REMOTE_OCR_SERVER_URL, file_path)
         
         return extracted_text.strip()
     

@@ -11,8 +11,7 @@ pdfplumber>=0.10.0
 
 # OCR and Text Processing
 pytesseract>=0.3.10
-paddleocr>=2.7.0
-numpy>=1.24.0
+# numpy>=1.24.0  # Only if used elsewhere
 
 # HTTP Requests
 requests>=2.31.0
@@ -23,9 +22,6 @@ python-dotenv>=1.0.0
 # File Upload and Multipart
 python-multipart>=0.0.6
 
-# AI/ML for Summarization
-llama-cpp-python>=0.2.0
-
 # Development and Testing (optional)
 # pytest>=7.4.0
 # pytest-django>=4.5.0
@@ -34,7 +30,8 @@ llama-cpp-python>=0.2.0
 django-cors-headers
 
 # OCR dependencies
-paddlepaddle==2.5.0  # Use paddlepaddle-gpu==2.5.0 if running with GPU
+# paddleocr>=2.7.0
+# paddlepaddle==2.5.0  # Use paddlepaddle-gpu==2.5.0 if running with GPU
 
 # System dependencies required for some packages:
 # - pdf2image: poppler-utils

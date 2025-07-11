@@ -8,7 +8,7 @@ import re
 import requests
 from .models import NoteSummary, OCRResult
 
-REMOTE_MARKDOWN_SERVER_URL = os.getenv("REMOTE_MARKDOWN_SERVER_URL")
+REMOTE_SERVER_URL = os.getenv("REMOTE_SERVER_URL")
 
 def request_markdown(server_url: str, input_text: str):
     url = f"{server_url}/generate-markdown"
@@ -71,13 +71,11 @@ def generate_advanced_summary(text):
         Use **bold** and *italic* where appropriate.
 
         Input:
-        """
         {text.strip()}
-        """
 
         Markdown Output:
     """
-    markdown = request_markdown(REMOTE_MARKDOWN_SERVER_URL, prompt)
+    markdown = request_markdown(REMOTE_SERVER_URL, prompt)
     if not markdown or markdown.startswith("Request failed") or markdown.startswith("Error from server"):
         return f"Summary generation failed: {markdown}"
     lines = markdown.split('\n')
