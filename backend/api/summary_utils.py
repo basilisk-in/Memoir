@@ -3,28 +3,28 @@ Summary generation utility functions for processing OCR text.
 This is a dummy implementation for demonstration purposes.
 """
 
+import os
 import re
+import requests
 from .models import NoteSummary, OCRResult
-from llama_cpp import Llama
-from pathlib import Path
-from django.conf import settings
-from .download_model import download_model
 
-MODEL_PATH = download_model()
-# MODEL_PATH = Path(settings.BASE_DIR / "api" / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf")
+REMOTE_MARKDOWN_SERVER_URL = os.getenv("REMOTE_MARKDOWN_SERVER_URL")
 
-# MODEL_PATH = Path(__file__).resolve().parent / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf"
+def request_markdown(server_url: str, input_text: str):
+    url = f"{server_url}/generate-markdown"
+    headers = {"Content-Type": "application/json"}
+    payload = {"input": input_text}
 
-
-
-# Initialize LLaMA model (load once)
-#ADJUST THESE VALUES BASED ON YOUR SYSTEM CAPABILITIES
-llm = Llama(
-    model_path=str(MODEL_PATH),
-    n_ctx=4096,        # Can try 6144 or 8192 if memory allows
-    n_threads=8,       # Matches your physical core count
-    n_gpu_layers=35    # Good balance for 12GB VRAM with Q4_K_M GGUF model
-)
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=1800)
+        response.raise_for_status()
+        data = response.json()
+        if "markdown" in data:
+            return data["markdown"]
+        else:
+            return f"Error from server: {data.get('error', 'Unknown error')}"
+    except requests.RequestException as e:
+        return f"Request failed: {e}"
 
 def clean_text(text):
     """
@@ -50,14 +50,10 @@ def clean_text(text):
 
 def generate_advanced_summary(text):
     """
-    Generate a more detailed summary with key points.
-    
-    Args:
-        text (str): Text to summarize
-        
-    Returns:
-        str: Detailed summary with structure
+    Generate a more detailed summary with key points using a remote markdown server.
     """
+    if not text or not text.strip():
+        return "No input text provided for summary."
     prompt = f"""
         You are a Markdown generator.
         Ensure that you take into account what is actually present in the input if there are no tables don't create tables forcefully etc,
@@ -75,17 +71,16 @@ def generate_advanced_summary(text):
         Use **bold** and *italic* where appropriate.
 
         Input:
-        \"\"\"
+        """
         {text.strip()}
-        \"\"\"
+        """
 
         Markdown Output:
     """
-
-    response = llm(prompt, max_tokens=1024, stop=["</s>"])
-    raw_string = response["choices"][0]["text"].strip()
-
-    lines = raw_string.split('\n')
+    markdown = request_markdown(REMOTE_MARKDOWN_SERVER_URL, prompt)
+    if not markdown or markdown.startswith("Request failed") or markdown.startswith("Error from server"):
+        return f"Summary generation failed: {markdown}"
+    lines = markdown.split('\n')
     cleaned_lines = [line.strip() for line in lines if line.strip()]
     return '\n'.join(cleaned_lines)
 
