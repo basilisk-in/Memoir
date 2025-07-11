@@ -51,7 +51,7 @@ Our GPU connected backend is currently offline. We have previously deployed the 
 2. **React Frontend (Vite)**
    - Authenticates via token-based API
    - Provides UI for Notion integration and document export
-   - Responsive, accessible, and themeable
+   - Responsive and accesible featuring dynamic themes
 
 ## 🚀 Quick Start
 ### Prerequisites
