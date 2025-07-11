@@ -23,8 +23,7 @@ python-dotenv>=1.0.0
 # File Upload and Multipart
 python-multipart>=0.0.6
 
-# AI/ML for Summarization
-llama-cpp-python>=0.2.0
+setuptools>=65.0.0
 
 # Development and Testing (optional)
 # pytest>=7.4.0
