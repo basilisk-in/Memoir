@@ -34,7 +34,7 @@ llama-cpp-python>=0.2.0
 django-cors-headers
 
 # OCR dependencies
-paddlepaddle==2.5.0  # Use paddlepaddle-gpu==2.5.0 if running with GPU
+paddlepaddle  # Use paddlepaddle-gpu==2.5.0 if running with GPU
 
 # System dependencies required for some packages:
 # - pdf2image: poppler-utils
