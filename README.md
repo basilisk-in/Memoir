@@ -22,9 +22,13 @@ Team Members:
 
 ### 🛠️ Tech Stack
 *Frontend*: React (Vite, TailwindCSS, React Router)
+
 *Backend*: Django, Django REST Framework, Djoser, SQLite, PaddleOCR, PyMuPDF, pdfplumber, LLM (remote Markdown server)
+
 *AI/ML*: PaddleOCR for text extraction, LLM (Mistral-7B) for Markdown summarization (served remotely)
+
 *Integrations*: Notion API
+
 
 ### Key Features
 - 📄 *Multi-file Upload*: Upload multiple PDF/image notes at once with custom names.
