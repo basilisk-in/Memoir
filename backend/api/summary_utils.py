@@ -8,18 +8,23 @@ from .models import NoteSummary, OCRResult
 from llama_cpp import Llama
 from pathlib import Path
 from django.conf import settings
+from .download_model import download_model
 
-MODEL_PATH = settings.BASE_DIR / "api" / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf"
+MODEL_PATH = download_model()
+# MODEL_PATH = Path(settings.BASE_DIR / "api" / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf")
+
+# MODEL_PATH = Path(__file__).resolve().parent / "models" / "mistral-7b-instruct-v0.1.Q4_K_M.gguf"
+
+
 
 # Initialize LLaMA model (load once)
 #ADJUST THESE VALUES BASED ON YOUR SYSTEM CAPABILITIES
 llm = Llama(
     model_path=str(MODEL_PATH),
-    n_ctx=8192,
-    n_threads=16,
-    n_gpu_layers=50
+    n_ctx=4096,        # Can try 6144 or 8192 if memory allows
+    n_threads=8,       # Matches your physical core count
+    n_gpu_layers=35    # Good balance for 12GB VRAM with Q4_K_M GGUF model
 )
-
 
 def clean_text(text):
     """
