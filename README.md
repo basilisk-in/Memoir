@@ -1,8 +1,8 @@
 # Memoir
-Your Notes, Smarter.
+From Pen to Productivity.
 
 ## Project Idea
-Memoir is an AI-powered note management platform that lets users upload, organize, and summarize their PDF and image notes. Leveraging advanced OCR and LLM-based Markdown generation, Memoir automatically extracts text from documents and produces rich, structured markdowns. Users can search, filter, and manage their notes, and even export markdowns to Notion for seamless knowledge management.
+Memoir is an AI-powered note management platform that lets users upload, organize, and summarize their PDF and image notes. Leveraging advanced OCR and LLM-based Markdown generation, Memoir automatically extracts text from uploaded documents and produce rich, structured markdowns which are then converted to notion blocks and are integrated with notion workspaces/pages of the users choice. Users can also search, filter, and manage their notes.
 
 Team Name:
 
@@ -25,36 +25,31 @@ This project is hosted at [memoir-brown.vercel.app](https://memoir-brown.vercel.
 Our GPU connected backend is currently offline. We have previously deployed the service on Vast.ai, but the container is currently inactive since we wish to use the credits wisely. Although we have credits available, we will activate the GPU hosting on Vast.ai when necessary. For testing access or further information, feel free to contact us at dev.basilisk@gmail.com.
 
 ### 🛠️ Tech Stack
- - **Frontend**: React (Vite, TailwindCSS, React Router)
- - **Backend**: Django, Django REST Framework, Djoser, SQLite, PaddleOCR, PyMuPDF, pdfplumber, LLM (remote Markdown server)
- - **AI/ML**: PaddleOCR for text extraction, LLM (Mistral-7B) for Markdown summarization (served remotely)
+ - **Frontend**: React (Vite, TailwindCSS, React Router, GSAP)
+ - **Backend**: Django, Django REST Framework, Djoser, SQLite, PaddleOCR, PyMuPDF, pdfplumber, LLM (Mistral-7B) for Markdown summarization, PaddleOCR for text extraction
  - **Integrations**: Notion API
 
-
 ### Key Features
-- 📄 **Multi-file Upload**: Upload multiple PDF/image notes at once with custom names.
 - 🔍 **OCR Extraction**: Automatic text extraction from PDFs and images using PaddleOCR and PyMuPDF.
-- 🧠 **AI Summarization**: Generate rich Markdown summaries using a remote LLM server.
-- 🗂️ **Note Management**: Search, filter, and organize notes by name or date.
+- 🧠 **AI Markdown Generation**: Generate rich Markdown & summaries using a remote LLM server.
+- 🗂️ **Note Management**: Search, filter, and organize notes.
 - 🔗 **Notion Export**: Export AI-generated summaries directly to your Notion workspace.
 - 👤 **User Authentication**: Secure registration, login, and token-based auth (Djoser).
 - 🖼️ **File Previews**: View uploaded notes and summaries in the web UI.
 - 🌗 **Dark/Light Mode**: Toggle between light and dark themes.
 
 ### 🏗️ Architecture
-1. **Django REST API Server**
-   - Handles user authentication, note uploads, OCR, and summary generation
+1. **Backend (Django REST API Server)**
+   - Handles user authentication, note uploads, OCR, and summary generation AAAAAAAAAAAAAAAAAA
    - Exposes REST endpoints for all note and user operations
    - Integrates with a remote LLM server for Markdown summary generation
    - Stores files in /media/notes/{user_id}/
+   - Receives text and returns Markdown summaries via HTTP
+   - Powered by Mistral-7B or similar model
 2. **React Frontend (Vite)**
-   - Modern SPA for uploading, viewing, and managing notes
    - Authenticates via token-based API
    - Provides UI for Notion integration and document export
    - Responsive, accessible, and themeable
-3. **Remote LLM Server (not included here)**
-   - Receives text and returns Markdown summaries via HTTP
-   - Powered by Mistral-7B or similar model
 
 ## 🚀 Quick Start
 ### Prerequisites
@@ -81,10 +76,15 @@ npm run dev  # Runs on http://localhost:5173
 ### Environment Variables
 Create a `.env` file in `backend/` with:
 ```
-REMOTE_MARKDOWN_SERVER_URL=https://your-llm-server-url
+REMOTE_MARKDOWN_SERVER_URL=https://your-llm-server-url AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 NOTION_CLIENT_ID=your_notion_client_id
 NOTION_CLIENT_SECRET=your_notion_secret
 FRONTEND_URL=http://localhost:5173
+```
+
+Create a `.env` file in `memoir_website/` with:
+```
+VITE_API_BASE_URL=your_backend_url
 ```
 
 ### System Dependencies
@@ -94,7 +94,6 @@ FRONTEND_URL=http://localhost:5173
 
 ### File Storage
 - Uploaded files: `backend/media/notes/{user_id}/filename.pdf`
-- Static files: `backend/static/`
 
 ## 📡 API Endpoints
 See [backend/API_TESTING_GUIDE.md](backend/API_TESTING_GUIDE.md) for full details. Key endpoints:
@@ -114,9 +113,9 @@ See [backend/API_TESTING_GUIDE.md](backend/API_TESTING_GUIDE.md) for full detail
 
 #### OCR & Summaries
 - `GET /api/get-ocr/{note_id}/` — Get OCR text
-- `GET /api/get-summary/{note_id}/` — Get AI summary
-- `POST /api/regenerate-ocr/{note_id}/` — Force OCR
-- `POST /api/regenerate-summary/{note_id}/` — Force summary
+- `GET /api/get-summary/{note_id}/` — Get AI Markdown
+- `POST /api/regenerate-ocr/{note_id}/` — Regenerate OCR
+- `POST /api/regenerate-summary/{note_id}/` — Regenerate Markdown
 
 #### Notion Integration
 - `POST /api/notion/authorize/` — Start Notion OAuth
@@ -130,19 +129,12 @@ See [backend/API_TESTING_GUIDE.md](backend/API_TESTING_GUIDE.md) for full detail
 - All endpoints require authentication except registration/login
 - File uploads use `multipart/form-data`
 
-### 💾 Database Models
-- **Note**: User, name, file, timestamps
-- **OCRResult**: One-to-one with Note, extracted text
-- **NoteSummary**: One-to-one with Note, AI-generated summary
-- **NotionIntegration**: User, access token, workspace info
-
 ### 🧠 AI/ML Pipeline
 - **OCR**: On upload, PDFs/images are processed with PyMuPDF and PaddleOCR
-- **Summarization**: Extracted text is sent to a remote LLM server, which returns a Markdown summary
-- **Notion Export**: Summaries can be exported to Notion as structured blocks
+- **Markdown Generation**: Extracted text is sent to a LLM server, which returns a Markdown
+- **Notion Export**: Markdown can be exported to Notion as structured blocks
 
 ### 🖥️ Frontend Features
-- Modern React SPA (Vite, TailwindCSS)
 - Components: Upload, MyDocuments, NotionIntegration, SignInModal, ThemeToggle, etc.
 - Custom hooks: useAuth, useTheme, useScrollAnimation
 - API integration via `src/services/api.js`
@@ -155,4 +147,4 @@ See [backend/API_TESTING_GUIDE.md](backend/API_TESTING_GUIDE.md) for full detail
 - Notion API: https://developers.notion.com/
 
 ## 🏁 Final Words
-Memoir brings together OCR, AI, and modern web tech to make your notes searchable, summarized, and exportable. Whether you're a student, researcher, or professional, Memoir helps you get more value from your documents.
+Memoir brings together OCR, AI, and modern web tech to make your notes searchable, summarized, and exportable. Whether you're a student, researcher, or professional, Memoir helps you get more value from your documents. We would like to thank CodeForBharat community for organizing this wonderful competition and allowing us to participate in CodeForBharat S2.
