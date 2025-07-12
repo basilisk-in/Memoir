@@ -147,4 +147,4 @@ See [backend/API_TESTING_GUIDE.md](backend/API_TESTING_GUIDE.md) for full detail
 - Notion API: https://developers.notion.com/
 
 ## 🏁 Final Words
-Memoir brings together OCR, AI, and modern web tech to make your notes searchable, summarized, and exportable. Whether you're a student, researcher, or professional, Memoir helps you get more value from your documents. We would like to thank CodeForBharat community for organizing this wonderful competition and allowing us to participate in CodeForBharat S2.
+Memoir brings together OCR, AI, and modern web tech to make your notes searchable, summarized, and exportable. Whether you're a student, researcher, or professional, Memoir helps you get more value from your documents. We would like to thank Tech Masters India community for organizing this wonderful competition and allowing us to participate in CodeForBharat S2.
